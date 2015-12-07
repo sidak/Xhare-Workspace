@@ -1,24 +1,14 @@
 package model;
 
 public class Point {
-	private int id;
 	private double lat;
 	private double longi;
 	
-	public Point(int i, double la, double lo){
-		this.id = i;
+	public Point(double la, double lo){
 		this.lat = la;
 		this.longi = lo;
 	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
+	
 	public double getLat() {
 		return lat;
 	}
@@ -36,7 +26,7 @@ public class Point {
 	}
 	
 	public boolean isGeoEqual(Point p1, Point p2){
-		if(Double.compare(p1.getLat(), p2.getLat())==0 &&
+		if(Double.compare(p1.getLat(), p2.getLat()) == 0 &&
 				Double.compare(p1.getLongi(), p2.getLongi()) == 0 ) return true;
 		
 		return false;

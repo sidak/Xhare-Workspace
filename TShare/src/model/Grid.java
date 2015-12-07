@@ -24,7 +24,7 @@ public class Grid {
 	}
 	
 	public Point getGeoCenter(){
-		return new Point(-1,(minLat+maxLat)/2, (minLongi + maxLongi)/2);
+		return new Point((minLat+maxLat)/2, (minLongi + maxLongi)/2);
 	}
 	
 	public int getId() {
