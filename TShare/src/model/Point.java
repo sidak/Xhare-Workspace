@@ -2,11 +2,11 @@ package model;
 
 public class Point {
 	private double lat;
-	private double longi;
+	private double lng;
 	
-	public Point(double la, double lo){
-		this.lat = la;
-		this.longi = lo;
+	public Point(double lat, double lng){
+		this.lat = lat;
+		this.lng = lng;
 	}
 	
 	public double getLat() {
@@ -17,17 +17,17 @@ public class Point {
 		this.lat = lat;
 	}
 
-	public double getLongi() {
-		return longi;
+	public double getLng() {
+		return lng;
 	}
 
-	public void setLongi(double longi) {
-		this.longi = longi;
+	public void setLng(double lng) {
+		this.lng = lng;
 	}
 	
 	public boolean isGeoEqual(Point p1, Point p2){
 		if(Double.compare(p1.getLat(), p2.getLat()) == 0 &&
-				Double.compare(p1.getLongi(), p2.getLongi()) == 0 ) return true;
+				Double.compare(p1.getLng(), p2.getLng()) == 0 ) return true;
 		
 		return false;
 	}

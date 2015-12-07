@@ -4,13 +4,13 @@ public class Grid {
 	private int id;
 	private double minLat;
 	private double maxLat;
-	private double minLongi;
-	private double maxLongi;
+	private double minLng;
+	private double maxLng;
 	private Point center;
 	
 	public boolean isInGrid(Point pt){
 		if(compareRange(pt.getLat(), minLat, maxLat) &&
-				compareRange(pt.getLongi(), minLongi, maxLongi)){
+				compareRange(pt.getLng(), minLng, maxLng)){
 			return true;
 		}
 		return false;
@@ -24,7 +24,7 @@ public class Grid {
 	}
 	
 	public Point getGeoCenter(){
-		return new Point((minLat+maxLat)/2, (minLongi + maxLongi)/2);
+		return new Point((minLat+maxLat)/2, (minLng + maxLng)/2);
 	}
 	
 	public int getId() {
@@ -51,20 +51,20 @@ public class Grid {
 		this.maxLat = maxLat;
 	}
 
-	public double getMinLongi() {
-		return minLongi;
+	public double getMinLng() {
+		return minLng;
 	}
 
-	public void setMinLongi(double minLongi) {
-		this.minLongi = minLongi;
+	public void setMinLng(double minLng) {
+		this.minLng = minLng;
 	}
 
-	public double getMaxLongi() {
-		return maxLongi;
+	public double getMaxLng() {
+		return maxLng;
 	}
 
-	public void setMaxLongi(double maxLongi) {
-		this.maxLongi = maxLongi;
+	public void setMaxLng(double maxLng) {
+		this.maxLng = maxLng;
 	}
 
 	public Point getCenter() {
