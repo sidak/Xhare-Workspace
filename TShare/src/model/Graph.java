@@ -40,6 +40,7 @@ public class Graph{
 	
 	private double aStarDist(Point src, Point dest) {
 		PriorityQueue<PointDistPair> minQueue = new PriorityQueue<PointDistPair>();
+		// the heuristic distance is calculated in kilometers
 		double heurisiticDist = Helper.distBetween(src, dest);
 		PointDistPair srcPair = new PointDistPair(src, 0.0, heurisiticDist);
 		

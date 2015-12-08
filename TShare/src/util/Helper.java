@@ -8,7 +8,7 @@ public class Helper {
 	private static double MILETOKM=1.609344;
 
 	/*
-	 * @return return distance between two geo points in meters
+	 * @return return distance between two geo points in kilometers
 	 */
 	public static double distBetween(double lat1, double lng1, double lat2,
 			double lng2) {
@@ -19,7 +19,7 @@ public class Helper {
 				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
 				* Math.sin(dLng / 2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = (EARTHRADIUS*MILETOKM*1.0E3) * c;
+		double dist = (EARTHRADIUS*MILETOKM) * c;
 		return dist;
 	}
 	
@@ -36,7 +36,7 @@ public class Helper {
 				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
 				* Math.sin(dLng / 2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = (EARTHRADIUS*MILETOKM*1.0E3) * c;
+		double dist = (EARTHRADIUS*MILETOKM) * c;
 		return dist;
 	}
 }
