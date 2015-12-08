@@ -4,8 +4,9 @@ import model.Point;
 
 public class Helper {
 	
-	private static double EARTHRADIUS=3958.75;
+	private static double EARTHRADIUSINMILES=3958.75;
 	private static double MILETOKM=1.609344;
+	private static double EARTHRADIUSINKM = EARTHRADIUSINMILES * MILETOKM;
 
 	/*
 	 * @return return distance between two geo points in kilometers
@@ -19,7 +20,7 @@ public class Helper {
 				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
 				* Math.sin(dLng / 2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = (EARTHRADIUS*MILETOKM) * c;
+		double dist = (EARTHRADIUSINMILES*MILETOKM) * c;
 		return dist;
 	}
 	
@@ -36,7 +37,51 @@ public class Helper {
 				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
 				* Math.sin(dLng / 2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = (EARTHRADIUS*MILETOKM) * c;
+		double dist = (EARTHRADIUSINMILES*MILETOKM) * c;
 		return dist;
+	}
+	public static Point findPointAtDistance(Point src, double dist, int axis){
+		double destLat=0.0, destLng=0.0;
+		double srcLat, srcLng;
+		srcLat = src.getLat();
+		srcLng = src.getLng();
+		
+		if(axis == 1){
+			// if finding along x axis towards east
+			destLat = srcLat;
+			destLng = findLngTowardEast(dist, srcLat, srcLng);
+		}
+		else{
+			// if finding along y axis towards north
+			destLng = srcLng;
+			destLat = findLatTowardsNorth(dist, srcLat);
+		}
+		return new Point(destLat, destLng);
+	}
+
+	public static double findLatTowardsNorth(double dist, double srcLat) {
+		return Math.toDegrees(
+					Math.asin(
+						Math.sin(Math.toRadians(srcLat))* 
+						Math.cos(dist/(double)EARTHRADIUSINKM)
+							+
+						Math.cos(Math.toRadians(srcLat))* 
+						Math.sin(dist/(double)EARTHRADIUSINKM)* 
+						Math.cos(Math.toRadians(0.0))
+					)
+				);
+	}
+
+	public static double findLngTowardEast(double dist, double srcLat, double srcLng) {
+		return Math.toDegrees(
+					Math.toRadians(srcLng) + 
+					Math.atan2(
+							Math.sin(Math.toRadians(90.0))*
+							Math.sin(dist/(double)EARTHRADIUSINKM)*
+							Math.cos(Math.toRadians(srcLat)),
+							
+							Math.cos(dist/(double)EARTHRADIUSINKM)
+					)
+				);
 	}
 }
