@@ -1,7 +1,9 @@
 package controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import model.Graph;
@@ -21,9 +23,11 @@ public class Preprocessor {
 	private static double gridLength, gridBreadth;
 	private static Scanner scan;
 	private static int numGrids;
+	private static int numGridsX, numGridsY;
 	// lists which we are going to search in order to 
 	// know the grid in which a particular point lies
 	private static List<Double> gridLngs, gridLats;
+	private static Map<Point, Integer> gridIdxMap;
 	
 	public static void main(String[] args) {
 		graph = new Graph();
@@ -48,6 +52,13 @@ public class Preprocessor {
 		
 		
 	}
+	
+	public int calcGridIndex(double lat, double lng){
+		int idxLat = Collections.binarySearch(gridLats, lat);
+		int idxLng = Collections.binarySearch(gridLngs, lng);
+		
+		return (idxLat*numGridsX + idxLng);
+	}
 
 	private static void calcGridDistMatrix() {
 		// indexing starts from bottom left
@@ -70,8 +81,9 @@ public class Preprocessor {
 	private static void makeGrids() {
 		double mapLength = Helper.distBetween(maxMapLat, minMapLng, maxMapLat, maxMapLng);
 		double mapBreadth = Helper.distBetween(minMapLat, minMapLng, maxMapLat, minMapLng);
-		int numGridX = (int)Math.ceil(mapLength/gridLength);
-		int numGridY = (int)Math.ceil(mapBreadth/gridBreadth);
+		numGridsX = (int)Math.ceil(mapLength/gridLength);
+		numGridsY = (int)Math.ceil(mapBreadth/gridBreadth);
+		numGrids = numGridsX*numGridsY;
 		
 		gridLngs = new ArrayList<Double>();
 		gridLats = new ArrayList<Double>();
@@ -83,7 +95,7 @@ public class Preprocessor {
 		gridLngs.add(startLng);
 		gridLats.add(startLat);
 		
-		for(int i = 0; i<numGridY; i++){
+		for(int i = 0; i<numGridsY; i++){
 			
 			double distFromMaxMapLat = Helper.distBetween(startLat, startLng, maxMapLat, startLng);
 			// if there is an uneven division along Y
@@ -92,7 +104,7 @@ public class Preprocessor {
 			}
 			else maxLat = Helper.findLatTowardsNorth(gridBreadth, startLat);
 			
-			for(int j = 0; j<numGridX; j++){
+			for(int j = 0; j<numGridsX; j++){
 				
 				double distFromMaxMapLng = Helper.distBetween(startLat, startLng, startLat, maxMapLng);
 				
@@ -104,7 +116,7 @@ public class Preprocessor {
 				
 				if(j==0) gridLngs.add(maxLng);
 				
-				int gridId = i*numGridX + j;
+				int gridId = i*numGridsX + j;
 				grids.add(new Grid(gridId, startLat, startLng, maxLat, maxLng));
 				
 				startLng = maxLng;
