@@ -17,6 +17,7 @@ public class Preprocessor {
 	private static double mapLength, mapBreadth;
 	private static double gridLength, gridBreadth;
 	private static Scanner scan;
+	private static int numGrids;
 	
 	public static void main(String[] args) {
 		graph = new Graph();
@@ -29,15 +30,33 @@ public class Preprocessor {
 		takeGridSizeInput();
 		
 		makeGrids();
+		addGridCenters();
 		calcGridDistMatrix();
 		
 		
 		
 	}
 
-	private static void calcGridDistMatrix() {
+	private static void addGridCenters() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	private static void calcGridDistMatrix() {
+		for(int i=0; i<numGrids; i++){
+			Grid srcGrid = grids.get(i);
+			List<Double> distances = new ArrayList<Double>(); 
+			for(int j=0; j<numGrids; j++){
+				
+				if(i==j)distances.add(0.0);
+				Grid destGrid = grids.get(j);
+				double gridDistance = graph.calcEdgeDist(srcGrid.getCenter(), destGrid.getCenter());
+				distances.add(gridDistance);
+				
+			}
+			gridDistMatrix.get(i).addAll(distances);
+			distances.clear();
+		}
 	}
 
 	private static void makeGrids() {
