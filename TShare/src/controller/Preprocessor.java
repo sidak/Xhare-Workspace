@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import model.Graph;
 import model.Grid;
+import util.Helper;
 
 public class Preprocessor {
 	
@@ -14,7 +15,8 @@ public class Preprocessor {
 	private static List< List<Double> > gridDistMatrix;
 	private static Graph graph;
 	private static List<Grid> grids;
-	private static double mapLength, mapBreadth;
+	private static double minMapLat, minMapLng;
+	private static double maxMapLat, maxMapLng;
 	private static double gridLength, gridBreadth;
 	private static Scanner scan;
 	private static int numGrids;
@@ -26,7 +28,7 @@ public class Preprocessor {
 		scan = new Scanner(System.in);
 		
 		takeGraphInput();
-		takeMapSizeInput();
+		takeMapInput();
 		takeGridSizeInput();
 		
 		makeGrids();
@@ -58,10 +60,39 @@ public class Preprocessor {
 			distances.clear();
 		}
 	}
-
+	
+	// take care of uneven splitting
 	private static void makeGrids() {
-		// TODO Auto-generated method stub
+		double mapLength = Helper.distBetween(maxMapLat, minMapLng, maxMapLat, maxMapLng);
+		double mapBreadth = Helper.distBetween(minMapLat, minMapLng, maxMapLat, minMapLng);
+		int numGridX = (int)Math.ceil(mapLength/gridLength);
+		int numGridY = (int)Math.ceil(mapBreadth/gridBreadth);
 		
+		double startLat = minMapLat;
+		double startLng = minMapLng;
+		double maxLat, maxLng;
+		for(int i = 0; i<numGridY; i++){
+			for(int j = 0; j<numGridX; j++){
+				
+				double distFromMaxMapLat = Helper.distBetween(startLat, startLng, maxMapLat, startLng);
+				double distFromMaxMapLng = Helper.distBetween(startLat, startLng, startLat, maxMapLng);
+				// if there is an uneven division along Y
+				if(Double.compare(distFromMaxMapLat, gridBreadth) == -1){
+					maxLat = maxMapLat;
+				}
+				else maxLat = Helper.findLatTowardsNorth(gridBreadth, startLat);
+				
+				// if there is an uneven division along X
+				if(Double.compare(distFromMaxMapLng, gridLength) == -1){
+					maxLng = maxMapLng;
+				}
+				else maxLng = Helper.findLngTowardEast(gridLength, startLat, startLng);
+				
+				int gridId = i*numGridX + j;
+				grids.add(new Grid(gridId, startLat, startLng, maxLat, maxLng));
+				
+			}
+		}
 	}
 
 	private static void takeGridSizeInput() {
@@ -69,9 +100,13 @@ public class Preprocessor {
 		gridBreadth = scan.nextDouble();		
 	}
 
-	private static void takeMapSizeInput() {
-		mapLength = scan.nextDouble();
-		mapBreadth = scan.nextDouble();
+	private static void takeMapInput() {
+		// the lower left 'base' point 
+		minMapLat = scan.nextDouble();
+		minMapLng = scan.nextDouble();
+		// the upper right 'bound' point
+		maxMapLat = scan.nextDouble();
+		maxMapLng = scan.nextDouble();
 	}
 
 	private static  void takeGraphInput() {
