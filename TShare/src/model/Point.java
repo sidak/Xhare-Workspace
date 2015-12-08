@@ -25,9 +25,9 @@ public class Point {
 		this.lng = lng;
 	}
 	
-	public boolean isGeoEqual(Point p1, Point p2){
-		if(Double.compare(p1.getLat(), p2.getLat()) == 0 &&
-				Double.compare(p1.getLng(), p2.getLng()) == 0 ) return true;
+	public boolean isGeoEqual(Point pt){
+		if(Double.compare(getLat(), pt.getLat()) == 0 &&
+				Double.compare(getLng(), pt.getLng()) == 0 ) return true;
 		
 		return false;
 	}
