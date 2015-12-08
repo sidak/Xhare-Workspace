@@ -8,6 +8,14 @@ public class Grid {
 	private double maxLng;
 	private Point center;
 	
+	public Grid(int id, double minLat, double minLng, double maxLat, double maxLng){
+		this.id = id;
+		this.minLat = minLat;
+		this.minLng = minLng;
+		this.maxLat = maxLat;
+		this.maxLng = maxLng;
+		this.center = new Point(0.0, 0.0);
+	}
 	public boolean isInGrid(Point pt){
 		if(compareRange(pt.getLat(), minLat, maxLat) &&
 				compareRange(pt.getLng(), minLng, maxLng)){
