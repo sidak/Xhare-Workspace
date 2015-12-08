@@ -2,8 +2,12 @@ package model;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
+
+import util.Helper;
 
 public class Graph{
 	// it is a directed graph
@@ -35,9 +39,34 @@ public class Graph{
 	}
 	
 	private double aStarDist(Point src, Point dest) {
-		// TODO Auto-generated method stub
+		PriorityQueue<PointDistPair> minQueue = new PriorityQueue<PointDistPair>();
+		double heurisiticDist = Helper.distBetween(src, dest);
+		PointDistPair srcPair = new PointDistPair(src, 0.0, heurisiticDist);
+		
+		minQueue.add(srcPair);
+		
+		while(minQueue.size()!=0){
+			PointDistPair pdp = minQueue.peek();
+			minQueue.remove();
+			
+			Set<Edge> edges = adjList.get(pdp.getPoint());
+			Iterator<Edge> it = edges.iterator();
+			while(it.hasNext()){	
+				
+				Point childPt = it.next().getDest();
+				double edgeDist = it.next().getDist();
+				double pathDist = pdp.getPathDist() + edgeDist;
+				double heurDist = Helper.distBetween(childPt, dest);
+				if(childPt.isGeoEqual(src)){
+					return pathDist;
+				}
+				PointDistPair childPdp = new PointDistPair(childPt, pathDist, heurDist);
+				minQueue.add(childPdp);
+			}
+		}
 		return 0;
 	}
+	
 	public int getNumVertices() {
 		return vertices.size();
 	}
