@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import model.Graph;
 import model.Grid;
+import model.Point;
 import util.Helper;
 
 public class Preprocessor {
@@ -20,6 +21,9 @@ public class Preprocessor {
 	private static double gridLength, gridBreadth;
 	private static Scanner scan;
 	private static int numGrids;
+	// lists which we are going to search in order to 
+	// know the grid in which a particular point lies
+	private static List<Double> gridLngs, gridLats;
 	
 	public static void main(String[] args) {
 		graph = new Graph();
@@ -42,9 +46,11 @@ public class Preprocessor {
 	private static void addGridCenters() {
 		// TODO Auto-generated method stub
 		
+		
 	}
 
 	private static void calcGridDistMatrix() {
+		// indexing starts from bottom left
 		for(int i=0; i<numGrids; i++){
 			Grid srcGrid = grids.get(i);
 			List<Double> distances = new ArrayList<Double>(); 
@@ -61,26 +67,34 @@ public class Preprocessor {
 		}
 	}
 	
-	// take care of uneven splitting
 	private static void makeGrids() {
 		double mapLength = Helper.distBetween(maxMapLat, minMapLng, maxMapLat, maxMapLng);
 		double mapBreadth = Helper.distBetween(minMapLat, minMapLng, maxMapLat, minMapLng);
 		int numGridX = (int)Math.ceil(mapLength/gridLength);
 		int numGridY = (int)Math.ceil(mapBreadth/gridBreadth);
 		
+		gridLngs = new ArrayList<Double>();
+		gridLats = new ArrayList<Double>();
+		
 		double startLat = minMapLat;
 		double startLng = minMapLng;
 		double maxLat, maxLng;
+		
+		gridLngs.add(startLng);
+		gridLats.add(startLat);
+		
 		for(int i = 0; i<numGridY; i++){
+			
+			double distFromMaxMapLat = Helper.distBetween(startLat, startLng, maxMapLat, startLng);
+			// if there is an uneven division along Y
+			if(Double.compare(distFromMaxMapLat, gridBreadth) == -1){
+				maxLat = maxMapLat;
+			}
+			else maxLat = Helper.findLatTowardsNorth(gridBreadth, startLat);
+			
 			for(int j = 0; j<numGridX; j++){
 				
-				double distFromMaxMapLat = Helper.distBetween(startLat, startLng, maxMapLat, startLng);
 				double distFromMaxMapLng = Helper.distBetween(startLat, startLng, startLat, maxMapLng);
-				// if there is an uneven division along Y
-				if(Double.compare(distFromMaxMapLat, gridBreadth) == -1){
-					maxLat = maxMapLat;
-				}
-				else maxLat = Helper.findLatTowardsNorth(gridBreadth, startLat);
 				
 				// if there is an uneven division along X
 				if(Double.compare(distFromMaxMapLng, gridLength) == -1){
@@ -88,10 +102,18 @@ public class Preprocessor {
 				}
 				else maxLng = Helper.findLngTowardEast(gridLength, startLat, startLng);
 				
+				if(j==0) gridLngs.add(maxLng);
+				
 				int gridId = i*numGridX + j;
 				grids.add(new Grid(gridId, startLat, startLng, maxLat, maxLng));
 				
+				startLng = maxLng;
+				
 			}
+			startLat = maxLat;
+			startLng = minMapLng;
+			
+			gridLats.add(startLat);
 		}
 	}
 
