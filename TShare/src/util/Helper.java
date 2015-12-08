@@ -20,7 +20,7 @@ public class Helper {
 				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
 				* Math.sin(dLng / 2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = (EARTHRADIUSINMILES*MILETOKM) * c;
+		double dist = Math.abs((EARTHRADIUSINMILES*MILETOKM) * c);
 		return dist;
 	}
 	
@@ -37,7 +37,7 @@ public class Helper {
 				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
 				* Math.sin(dLng / 2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = (EARTHRADIUSINMILES*MILETOKM) * c;
+		double dist = Math.abs((EARTHRADIUSINMILES*MILETOKM) * c);
 		return dist;
 	}
 	public static Point findPointAtDistance(Point src, double dist, int axis){
