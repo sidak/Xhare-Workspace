@@ -2,6 +2,8 @@ package controller;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -27,7 +29,7 @@ public class Preprocessor {
 	// lists which we are going to search in order to 
 	// know the grid in which a particular point lies
 	private static List<Double> gridLngs, gridLats;
-	private static Map<Point, Integer> gridIdxMap;
+	private static Map<Integer, List<Point> > gridIdxMap;
 	
 	public static void main(String[] args) {
 		graph = new Graph();
@@ -40,20 +42,70 @@ public class Preprocessor {
 		takeGridSizeInput();
 		
 		makeGrids();
-		addGridCenters();
+		setAllGridCenters();
 		calcGridDistMatrix();
 		
 		
 		
 	}
 
-	private static void addGridCenters() {
-		// TODO Auto-generated method stub
+	private static void setAllGridCenters() {
+		
+		mapPointsToGrids();
+		
+		for(int i = 0; i<numGrids; i++){
+			Point roadNetworkCenter = findNearestPointToGridCenter(i);
+			grids.get(i).setCenter(roadNetworkCenter);
+		}
 		
 		
 	}
+
+	private static Point findNearestPointToGridCenter(int gridIdx) {
+		List<Point> ptList = gridIdxMap.get(gridIdx);
+		
+		Grid grid = grids.get(gridIdx);
+		double minDist = Double.MAX_VALUE;
+		
+		Point geoCenter = grid.getGeoCenter();
+		Point roadNetworkCenter = null;
+		
+		for(int j = 0; j<ptList.size(); j++){
+			double ptDist = Helper.distBetween(geoCenter, ptList.get(j));
+			if(Double.compare(ptDist, minDist) <= 0 ){
+				minDist = ptDist;
+				roadNetworkCenter = ptList.get(j);
+			}
+		}
+		return roadNetworkCenter;
+	}
+
+	private static void mapPointsToGrids() {
+		gridIdxMap = new HashMap<Integer, List<Point> >();
+		
+		Iterator<Point> vertexIterator = graph.getVertices().iterator();
+		
+		while(vertexIterator.hasNext()){
+			int idx = calcGridIndex(vertexIterator.next());
+			
+			if(!gridIdxMap.containsKey(idx)){
+				ArrayList<Point> ptList = new ArrayList<Point>();
+				ptList.add(vertexIterator.next());
+				gridIdxMap.put(idx, ptList);
+			}
+			gridIdxMap.get(idx).add(vertexIterator.next());
+		}
+	}
 	
-	public int calcGridIndex(double lat, double lng){
+	private static int calcGridIndex(double lat, double lng){
+		int idxLat = Collections.binarySearch(gridLats, lat);
+		int idxLng = Collections.binarySearch(gridLngs, lng);
+		
+		return (idxLat*numGridsX + idxLng);
+	}
+	private static int calcGridIndex(Point pt){
+		double lat = pt.getLat();
+		double lng = pt.getLng();
 		int idxLat = Collections.binarySearch(gridLats, lat);
 		int idxLng = Collections.binarySearch(gridLngs, lng);
 		
