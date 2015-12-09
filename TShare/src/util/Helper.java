@@ -5,9 +5,9 @@ import model.Point;
 public class Helper {
 	
 	private static final int XAXIS_TOWARDS_EAST = 1;
-	private static final double EARTHRADIUSINMILES=3958.75;
-	private static final double MILETOKM=1.609344;
-	private static final double EARTHRADIUSINKM = EARTHRADIUSINMILES * MILETOKM;
+	private static final double EARTH_RADIUS_IN_MILES=3958.75;
+	private static final double MILE_TO_KM=1.609344;
+	private static final double EARTH_RADIUS_IN_KM = EARTH_RADIUS_IN_MILES * MILE_TO_KM;
 
 	/*
 	 * @return return distance between two geo points in kilometers
@@ -21,7 +21,7 @@ public class Helper {
 				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
 				* Math.sin(dLng / 2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = Math.abs((EARTHRADIUSINMILES*MILETOKM) * c);
+		double dist = Math.abs((EARTH_RADIUS_IN_MILES*MILE_TO_KM) * c);
 		return dist;
 	}
 	
@@ -38,7 +38,7 @@ public class Helper {
 				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
 				* Math.sin(dLng / 2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = Math.abs((EARTHRADIUSINMILES*MILETOKM) * c);
+		double dist = Math.abs((EARTH_RADIUS_IN_MILES*MILE_TO_KM) * c);
 		return dist;
 	}
 	public static Point findPointAtDistance(Point src, double dist, int axis){
@@ -62,10 +62,10 @@ public class Helper {
 		return Math.toDegrees(
 					Math.asin(
 						Math.sin(Math.toRadians(srcLat))* 
-						Math.cos(dist/(double)EARTHRADIUSINKM)
+						Math.cos(dist/(double)EARTH_RADIUS_IN_KM)
 							+
 						Math.cos(Math.toRadians(srcLat))* 
-						Math.sin(dist/(double)EARTHRADIUSINKM)* 
+						Math.sin(dist/(double)EARTH_RADIUS_IN_KM)* 
 						Math.cos(Math.toRadians(0.0))
 					)
 				);
@@ -76,10 +76,10 @@ public class Helper {
 					Math.toRadians(srcLng) + 
 					Math.atan2(
 							Math.sin(Math.toRadians(90.0))*
-							Math.sin(dist/(double)EARTHRADIUSINKM)*
+							Math.sin(dist/(double)EARTH_RADIUS_IN_KM)*
 							Math.cos(Math.toRadians(srcLat)),
 							
-							Math.cos(dist/(double)EARTHRADIUSINKM)
+							Math.cos(dist/(double)EARTH_RADIUS_IN_KM)
 					)
 				);
 	}
