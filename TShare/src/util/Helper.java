@@ -8,6 +8,8 @@ public class Helper {
 	private static final double EARTH_RADIUS_IN_MILES=3958.75;
 	private static final double MILE_TO_KM=1.609344;
 	private static final double EARTH_RADIUS_IN_KM = EARTH_RADIUS_IN_MILES * MILE_TO_KM;
+	private final static double EPSILON = 0.000001;
+
 
 	/*
 	 * @return return distance between two geo points in kilometers
@@ -82,5 +84,8 @@ public class Helper {
 							Math.cos(dist/(double)EARTH_RADIUS_IN_KM)
 					)
 				);
+	}
+	public static boolean areEqualDoubles(double a, double b){
+	    return a == b ? true : Math.abs(a - b) < EPSILON;
 	}
 }
