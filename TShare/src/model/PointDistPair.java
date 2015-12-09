@@ -1,5 +1,7 @@
 package model;
 
+import util.CompareDouble;
+
 public class PointDistPair implements Comparable<PointDistPair>{
 	private Point point;
 	private double pathDist;
@@ -34,7 +36,14 @@ public class PointDistPair implements Comparable<PointDistPair>{
 	
 	@Override
 	public int compareTo(PointDistPair pdp) {
-		return Double.compare((getPathDist() + getHeuristicDist()), (pdp.getPathDist() + pdp.getHeuristicDist()));
+		
+		double totalDistA, totalDistB;
+		totalDistA = getPathDist() + getHeuristicDist();
+		totalDistB = pdp.getPathDist() + pdp.getHeuristicDist();
+		
+		if(CompareDouble.greaterThan(totalDistA, totalDistB)) return 1;
+		else if (CompareDouble.lessThan(totalDistA, totalDistB)) return -1;
+		else return 0;
 	}
 	
 	
