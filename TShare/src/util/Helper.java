@@ -4,9 +4,10 @@ import model.Point;
 
 public class Helper {
 	
-	private static double EARTHRADIUSINMILES=3958.75;
-	private static double MILETOKM=1.609344;
-	private static double EARTHRADIUSINKM = EARTHRADIUSINMILES * MILETOKM;
+	private static final int XAXIS_TOWARDS_EAST = 1;
+	private static final double EARTHRADIUSINMILES=3958.75;
+	private static final double MILETOKM=1.609344;
+	private static final double EARTHRADIUSINKM = EARTHRADIUSINMILES * MILETOKM;
 
 	/*
 	 * @return return distance between two geo points in kilometers
@@ -46,13 +47,11 @@ public class Helper {
 		srcLat = src.getLat();
 		srcLng = src.getLng();
 		
-		if(axis == 1){
-			// if finding along x axis towards east
+		if(axis == XAXIS_TOWARDS_EAST){
 			destLat = srcLat;
 			destLng = findLngTowardEast(dist, srcLat, srcLng);
 		}
 		else{
-			// if finding along y axis towards north
 			destLng = srcLng;
 			destLat = findLatTowardsNorth(dist, srcLat);
 		}

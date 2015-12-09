@@ -23,7 +23,7 @@ public class Grid {
 		}
 		return false;
 	}
-	// ask about the corners of the grid 
+	// TODO: Take better care about the corners of the grid 
 	public boolean compareRange(double val, double min, double max){
 		if(Double.compare(val, min) >= 0 && Double.compare(val, max) <=0 ){
 			return true;

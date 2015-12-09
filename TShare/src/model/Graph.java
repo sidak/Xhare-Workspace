@@ -26,14 +26,12 @@ public class Graph{
 		vertices.add(u);
 		vertices.add(v);
 		
-		// check if the list corresponding to u has not been initialised
 		if(!adjList.containsKey(u)) adjList.put(u, new HashSet<Edge>());
 		
 		adjList.get(u).add(e);
 		
 	}
 	
-	// use A* to calculate distance with heuristic as euclidean distance
 	public double calcEdgeDist(Point src, Point dest){
 		return aStarDist(src, dest);
 	}

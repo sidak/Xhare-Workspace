@@ -15,19 +15,15 @@ import util.Helper;
 
 public class Preprocessor {
 	
-	// ask about the units of the distances
-	
 	private static List< List<Double> > gridDistMatrix;
 	private static Graph graph;
 	private static List<Grid> grids;
+	private static Scanner scan;
 	private static double minMapLat, minMapLng;
 	private static double maxMapLat, maxMapLng;
 	private static double gridLength, gridBreadth;
-	private static Scanner scan;
 	private static int numGrids;
 	private static int numGridsX, numGridsY;
-	// lists which we are going to search in order to 
-	// know the grid in which a particular point lies
 	private static List<Double> gridLngs, gridLats;
 	private static Map<Integer, List<Point> > gridIdxMap;
 	
@@ -37,27 +33,26 @@ public class Preprocessor {
 		gridDistMatrix = new ArrayList< List<Double> >();
 		scan = new Scanner(System.in);
 		
-		takeGraphInput();
-		takeMapInput();
-		takeGridSizeInput();
-		
+		takeInput();
 		makeGrids();
 		setAllGridCenters();
 		calcGridDistMatrix();
 		
-		
-		
+	}
+
+	private static void takeInput() {
+		takeGraphInput();
+		takeMapInput();
+		takeGridSizeInput();
 	}
 
 	private static void setAllGridCenters() {
 		
 		mapPointsToGrids();
-		
 		for(int i = 0; i<numGrids; i++){
 			Point roadNetworkCenter = findNearestPointToGridCenter(i);
 			grids.get(i).setCenter(roadNetworkCenter);
 		}
-		
 		
 	}
 
@@ -97,12 +92,6 @@ public class Preprocessor {
 		}
 	}
 	
-	private static int calcGridIndex(double lat, double lng){
-		int idxLat = Collections.binarySearch(gridLats, lat);
-		int idxLng = Collections.binarySearch(gridLngs, lng);
-		
-		return (idxLat*numGridsX + idxLng);
-	}
 	private static int calcGridIndex(Point pt){
 		double lat = pt.getLat();
 		double lng = pt.getLng();
@@ -113,7 +102,6 @@ public class Preprocessor {
 	}
 
 	private static void calcGridDistMatrix() {
-		// indexing starts from bottom left
 		for(int i=0; i<numGrids; i++){
 			Grid srcGrid = grids.get(i);
 			List<Double> distances = new ArrayList<Double>(); 
@@ -149,19 +137,14 @@ public class Preprocessor {
 		
 		for(int i = 0; i<numGridsY; i++){
 			
-			double distFromMaxMapLat = Helper.distBetween(startLat, startLng, maxMapLat, startLng);
-			// if there is an uneven division along Y
-			if(Double.compare(distFromMaxMapLat, gridBreadth) == -1){
+			if(isUnevenDivisionAlongY(startLat, startLng)){
 				maxLat = maxMapLat;
 			}
 			else maxLat = Helper.findLatTowardsNorth(gridBreadth, startLat);
 			
 			for(int j = 0; j<numGridsX; j++){
 				
-				double distFromMaxMapLng = Helper.distBetween(startLat, startLng, startLat, maxMapLng);
-				
-				// if there is an uneven division along X
-				if(Double.compare(distFromMaxMapLng, gridLength) == -1){
+				if(isUnevenDivisionAlongX(startLat, startLng)){
 					maxLng = maxMapLng;
 				}
 				else maxLng = Helper.findLngTowardEast(gridLength, startLat, startLng);
@@ -181,41 +164,59 @@ public class Preprocessor {
 		}
 	}
 
+	private static boolean isUnevenDivisionAlongX(double startLat, double startLng) {
+		double distFromMaxMapLng = Helper.distBetween(startLat, startLng, startLat, maxMapLng);
+		return (Double.compare(distFromMaxMapLng, gridLength) == -1);		
+	}
+
+	private static boolean isUnevenDivisionAlongY(double startLat, double startLng) {
+		double distFromMaxMapLat = Helper.distBetween(startLat, startLng, maxMapLat, startLng);
+		return (Double.compare(distFromMaxMapLat, gridBreadth) == -1);	
+	}
+
 	private static void takeGridSizeInput() {
 		gridLength = scan.nextDouble();
 		gridBreadth = scan.nextDouble();		
 	}
 
 	private static void takeMapInput() {
-		// the lower left 'base' point 
-		minMapLat = scan.nextDouble();
-		minMapLng = scan.nextDouble();
-		// the upper right 'bound' point
+		inputLowerLeftPoint();
+		inputUpperRightPoint();
+	}
+
+	private static void inputUpperRightPoint() {
 		maxMapLat = scan.nextDouble();
 		maxMapLng = scan.nextDouble();
 	}
 
+	private static void inputLowerLeftPoint() {
+		minMapLat = scan.nextDouble();
+		minMapLng = scan.nextDouble();
+	}
+	// TODO: take care of units of speed limit
 	private static  void takeGraphInput() {
-		double lat1, lng1, lat2, lng2, dist, sl;
+		double lat1, lng1, lat2, lng2, distInKiloMeters, sl;
 		
 		lat1 = scan.nextDouble();
 		lng1 = scan.nextDouble();
 		lat2 = scan.nextDouble();
 		lng2 = scan.nextDouble();
-		dist = scan.nextDouble();
+		distInKiloMeters = scan.nextDouble();
 		sl = scan.nextDouble();
 		
-		// the end of the input will be denoted by
-		// -1.0 -1.0 -1.0 -1.0 -1.0 -1.0
-		while(Double.compare(dist, -1.0 )!=0){
-			graph.addEdge(lat1, lng1, lat2, lng2, dist, sl);
+		while(isMoreInput(distInKiloMeters)){
+			graph.addEdge(lat1, lng1, lat2, lng2, distInKiloMeters, sl);
 			lat1 = scan.nextDouble();
 			lng1 = scan.nextDouble();
 			lat2 = scan.nextDouble();
 			lng2 = scan.nextDouble();
-			dist = scan.nextDouble();
+			distInKiloMeters = scan.nextDouble();
 			sl = scan.nextDouble();
 		}
 		
+	}
+	
+	private static boolean isMoreInput(double dist){
+		return Double.compare(dist, -1.0) == 1 ;
 	}
 }
