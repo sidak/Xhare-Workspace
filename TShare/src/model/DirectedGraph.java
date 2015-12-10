@@ -32,41 +32,45 @@ public class DirectedGraph{
 		
 	}
 	
-	public double calcEdgeDist(Point src, Point dest){
-		return aStarDist(src, dest);
+	public double[] calcEdgeDistAndTime(Point src, Point dest){
+		return aStarDistAndTime(src, dest);
 	}
 	
-	private double aStarDist(Point src, Point dest) {
-		PriorityQueue<PointDistPair> minQueue = new PriorityQueue<PointDistPair>();
+	private double[] aStarDistAndTime(Point src, Point dest) {
+		PriorityQueue<PointPathDetails> minQueue = new PriorityQueue<PointPathDetails>();
 		// the heuristic distance is calculated in kilometers
 		double heurisiticDist = DistanceHelper.distBetween(src, dest);
-		PointDistPair srcPair = new PointDistPair(src, 0.0, heurisiticDist);
+		PointPathDetails srcPair = new PointPathDetails(src, 0.0, heurisiticDist, 0.0);
 		
 		minQueue.add(srcPair);
 		
 		while(minQueue.size()!=0){
-			PointDistPair pdp = minQueue.peek();
+			PointPathDetails pointPathDetail = minQueue.peek();
 			minQueue.remove();
 			
-			if(!adjList.containsKey(pdp.getPoint())){
-				return -1.0;
+			if(!adjList.containsKey(pointPathDetail.getPoint())){
+				return new double[] {-1.0, -1.0};
 			}
-			Set<Edge> edges = adjList.get(pdp.getPoint());
+			Set<Edge> edges = adjList.get(pointPathDetail.getPoint());
 			Iterator<Edge> it = edges.iterator();
 			while(it.hasNext()){	
 				Edge edge = it.next();
 				Point childPt = edge.getDest();
 				double edgeDist = edge.getDist();
-				double pathDist = pdp.getPathDist() + edgeDist;
+				double pathDist = pointPathDetail.getPathDist() + edgeDist;
+				double pathTime = pointPathDetail.getPathTime() + (edgeDist/edge.getSpeedLimit());
 				double heurDist = DistanceHelper.distBetween(childPt, dest);
 				if(childPt.isGeoEqual(dest)){
-					return pathDist;
+					double[] destDetail = new double[2];
+					destDetail[0] = pathDist;
+					destDetail[1] = pathTime;
+					return destDetail;
 				}
-				PointDistPair childPdp = new PointDistPair(childPt, pathDist, heurDist);
+				PointPathDetails childPdp = new PointPathDetails(childPt, pathDist, heurDist, pathTime);
 				minQueue.add(childPdp);
 			}
 		}
-		return 0;
+		return new double[] {-1.0, -1.0};
 	}
 	
 	public int getNumVertices() {

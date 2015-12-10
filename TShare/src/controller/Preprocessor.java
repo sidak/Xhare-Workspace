@@ -8,15 +8,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import model.Graph;
+import model.DirectedGraph;
 import model.Grid;
 import model.Point;
+import util.CompareDouble;
 import util.DistanceHelper;
 
 public class Preprocessor {
 	
 	private static List< List<Double> > gridDistMatrix;
-	private static Graph graph;
+	private static List< List<Double> > gridTimeMatrix;
+	private static DirectedGraph graph;
 	private static List<Grid> grids;
 	private static Scanner scan;
 	private static double minMapLat, minMapLng;
@@ -28,25 +30,46 @@ public class Preprocessor {
 	private static Map<Integer, List<Point> > gridIdxMap;
 	
 	public static void main(String[] args) {
-		graph = new Graph();
+		graph = new DirectedGraph();
 		grids = new ArrayList<Grid>();
 		gridDistMatrix = new ArrayList< List<Double> >();
+		gridTimeMatrix = new ArrayList< List<Double> >();
 		scan = new Scanner(System.in);
 		System.out.println("Starting Work");
 		takeInput();
 		makeGrids();
 		setAllGridCenters();
-		calcGridDistMatrix();
-		
+		calcGridDistAndTimeMatrix();
+		computeSpatioTemporalGridIndex();
+		saveToFile();
 		System.out.println("Done Everything");
 	}
 
-	private static void printGridDistanceMatrix() {
-		System.out.println("Size of Grid Distance Matrix is "+ gridDistMatrix.size() +"\n");
-		System.out.println("The grid distance matrix is as follows\n");
-		for(int i=0; i<gridDistMatrix.size(); i++){
-			for(int j=0; j<gridDistMatrix.get(i).size(); j++){
-				System.out.print("" + gridDistMatrix.get(i).get(j) + " ");
+	private static void saveToFile() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void computeSpatioTemporalGridIndex() {
+		computeSpatialGridIndex();
+		computeTemporalGridIndex();
+	}
+
+	private static void computeTemporalGridIndex() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void computeSpatialGridIndex() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void printGridMatrix(List<List<Double>> gridMatrix) {
+		System.out.println("Size of Matrix is "+ gridMatrix.size() +"\n");
+		for(int i=0; i<gridMatrix.size(); i++){
+			for(int j=0; j<gridMatrix.get(i).size(); j++){
+				System.out.print("" + gridMatrix.get(i).get(j) + " ");
 			}
 			System.out.print("\n");
 		}
@@ -120,24 +143,36 @@ public class Preprocessor {
 		return (idxLat*numGridsX + idxLng);
 	}
 
-	private static void calcGridDistMatrix() {
+	private static void calcGridDistAndTimeMatrix() {
 		for(int i=0; i<numGrids; i++){
 			Grid srcGrid = grids.get(i);
 			List<Double> distances = new ArrayList<Double>(); 
+			List<Double> times = new ArrayList<Double>();
 			for(int j=0; j<numGrids; j++){
 				
-				if(i==j)distances.add(0.0);
+				if(i==j){
+					distances.add(0.0);
+					times.add(0.0);
+				}
 				else{
 					Grid destGrid = grids.get(j);
-					double gridDistance = graph.calcEdgeDist(srcGrid.getCenter(), destGrid.getCenter());
-					distances.add(gridDistance);
+					double [] distTimePair = graph.calcEdgeDistAndTime(srcGrid.getCenter(), destGrid.getCenter());
+					distances.add(distTimePair[0]);
+					times.add(distTimePair[1]);
 				}
 			}
-			//gridDistMatrix. = new ArrayList<double>();
 			gridDistMatrix.add(distances);
-			//distances.clear();
+			gridTimeMatrix.add(times);
 		}
-		printGridDistanceMatrix();
+		
+		printGridDistAndTimeMatrix();
+	}
+
+	private static void printGridDistAndTimeMatrix() {
+		System.out.println("The grid distance matrix is as follows\n");
+		printGridMatrix(gridDistMatrix);
+		System.out.println("The grid time matrix is as follows\n");
+		printGridMatrix(gridTimeMatrix);
 	}
 	
 	private static void makeGrids() {
@@ -199,22 +234,20 @@ public class Preprocessor {
 
 	private static boolean isUnevenDivisionAlongX(double startLat, double startLng) {
 		double distFromMaxMapLng = DistanceHelper.distBetween(startLat, startLng, startLat, maxMapLng);
-		return (Double.compare(distFromMaxMapLng, gridLength) == -1);		
+		return CompareDouble.lessThan(distFromMaxMapLng, gridLength);		
 	}
 
 	private static boolean isUnevenDivisionAlongY(double startLat, double startLng) {
 		double distFromMaxMapLat = DistanceHelper.distBetween(startLat, startLng, maxMapLat, startLng);
-		return (Double.compare(distFromMaxMapLat, gridBreadth) == -1);	
+		return CompareDouble.lessThan(distFromMaxMapLat, gridBreadth);	
 	}
 
 	private static void takeGridSizeInput() {
-		//System.out.println("taking grid sz inp");
 		gridLength = scan.nextDouble();
 		gridBreadth = scan.nextDouble();		
 	}
 
 	private static void takeMapInput() {
-		//System.out.println("taking map inp");
 		inputLowerLeftPoint();
 		inputUpperRightPoint();
 	}
@@ -230,7 +263,6 @@ public class Preprocessor {
 	}
 	// TODO: take care of units of speed limit
 	private static  void takeGraphInput() {
-		//System.out.println("taking graph inp");
 		double lat1, lng1, lat2, lng2, distInKiloMeters, sl;
 		
 		lat1 = scan.nextDouble();
