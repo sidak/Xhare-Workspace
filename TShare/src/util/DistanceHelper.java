@@ -2,7 +2,7 @@ package util;
 
 import model.Point;
 
-public class Helper {
+public class DistanceHelper {
 	
 	public static final int XAXIS_TOWARDS_EAST = 1;
 	public static final int YAXIS_TOWARDS_NORTH = -1;

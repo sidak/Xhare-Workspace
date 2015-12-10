@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
-import util.Helper;
+import util.DistanceHelper;
 
 public class Graph{
 	// it is a directed graph
@@ -39,7 +39,7 @@ public class Graph{
 	private double aStarDist(Point src, Point dest) {
 		PriorityQueue<PointDistPair> minQueue = new PriorityQueue<PointDistPair>();
 		// the heuristic distance is calculated in kilometers
-		double heurisiticDist = Helper.distBetween(src, dest);
+		double heurisiticDist = DistanceHelper.distBetween(src, dest);
 		PointDistPair srcPair = new PointDistPair(src, 0.0, heurisiticDist);
 		
 		minQueue.add(srcPair);
@@ -58,7 +58,7 @@ public class Graph{
 				Point childPt = edge.getDest();
 				double edgeDist = edge.getDist();
 				double pathDist = pdp.getPathDist() + edgeDist;
-				double heurDist = Helper.distBetween(childPt, dest);
+				double heurDist = DistanceHelper.distBetween(childPt, dest);
 				if(childPt.isGeoEqual(dest)){
 					return pathDist;
 				}

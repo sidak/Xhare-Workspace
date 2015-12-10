@@ -11,7 +11,7 @@ import java.util.Scanner;
 import model.Graph;
 import model.Grid;
 import model.Point;
-import util.Helper;
+import util.DistanceHelper;
 
 public class Preprocessor {
 	
@@ -80,7 +80,7 @@ public class Preprocessor {
 		Point roadNetworkCenter = null;
 	
 		for(int j = 0; j<ptList.size(); j++){
-			double ptDist = Helper.distBetween(geoCenter, ptList.get(j));
+			double ptDist = DistanceHelper.distBetween(geoCenter, ptList.get(j));
 			if(Double.compare(ptDist, minDist) <= 0 ){
 				minDist = ptDist;
 				roadNetworkCenter = ptList.get(j);
@@ -141,8 +141,8 @@ public class Preprocessor {
 	}
 	
 	private static void makeGrids() {
-		double mapLength = Helper.distBetween(maxMapLat, minMapLng, maxMapLat, maxMapLng);
-		double mapBreadth = Helper.distBetween(minMapLat, minMapLng, maxMapLat, minMapLng);
+		double mapLength = DistanceHelper.distBetween(maxMapLat, minMapLng, maxMapLat, maxMapLng);
+		double mapBreadth = DistanceHelper.distBetween(minMapLat, minMapLng, maxMapLat, minMapLng);
 		numGridsX = (int)Math.ceil(mapLength/gridLength);
 		numGridsY = (int)Math.ceil(mapBreadth/gridBreadth);
 		numGrids = numGridsX*numGridsY;
@@ -162,14 +162,14 @@ public class Preprocessor {
 			if(isUnevenDivisionAlongY(startLat, startLng)){
 				maxLat = maxMapLat;
 			}
-			else maxLat = Helper.findLatTowardsNorth(gridBreadth, startLat);
+			else maxLat = DistanceHelper.findLatTowardsNorth(gridBreadth, startLat);
 			
 			for(int j = 0; j<numGridsX; j++){
 				
 				if(isUnevenDivisionAlongX(startLat, startLng)){
 					maxLng = maxMapLng;
 				}
-				else maxLng = Helper.findLngTowardEast(gridLength, startLat, startLng);
+				else maxLng = DistanceHelper.findLngTowardEast(gridLength, startLat, startLng);
 				
 				if(i==0) gridLngs.add(maxLng);
 				
@@ -198,12 +198,12 @@ public class Preprocessor {
 	}
 
 	private static boolean isUnevenDivisionAlongX(double startLat, double startLng) {
-		double distFromMaxMapLng = Helper.distBetween(startLat, startLng, startLat, maxMapLng);
+		double distFromMaxMapLng = DistanceHelper.distBetween(startLat, startLng, startLat, maxMapLng);
 		return (Double.compare(distFromMaxMapLng, gridLength) == -1);		
 	}
 
 	private static boolean isUnevenDivisionAlongY(double startLat, double startLng) {
-		double distFromMaxMapLat = Helper.distBetween(startLat, startLng, maxMapLat, startLng);
+		double distFromMaxMapLat = DistanceHelper.distBetween(startLat, startLng, maxMapLat, startLng);
 		return (Double.compare(distFromMaxMapLat, gridBreadth) == -1);	
 	}
 
