@@ -2,18 +2,20 @@ package model;
 
 import util.CompareDouble;
 
-public class PointDistPair implements Comparable<PointDistPair>{
+public class PointPathDetails implements Comparable<PointPathDetails>{
 	private Point point;
 	private double pathDist;
 	private double heuristicDist;
-	public PointDistPair(){
+	private double pathTime;
+	
+	public PointPathDetails(){
 		
 	}
-	public PointDistPair(Point point, double pathDist, double heurisiticDist){
+	public PointPathDetails(Point point, double pathDist, double heurisiticDist, double pathTime){
 		this.point = point;
 		this.pathDist = pathDist;
 		this.heuristicDist = heurisiticDist;
-		
+		this.pathTime = pathTime;
 	}
 	public double getHeuristicDist() {
 		return heuristicDist;
@@ -34,8 +36,15 @@ public class PointDistPair implements Comparable<PointDistPair>{
 		this.pathDist = dist;
 	}
 	
+	public double getPathTime() {
+		return pathTime;
+	}
+	public void setPathTime(double pathTime) {
+		this.pathTime = pathTime;
+	}
+	
 	@Override
-	public int compareTo(PointDistPair pdp) {
+	public int compareTo(PointPathDetails pdp) {
 		
 		double totalDistA, totalDistB;
 		totalDistA = getPathDist() + getHeuristicDist();
