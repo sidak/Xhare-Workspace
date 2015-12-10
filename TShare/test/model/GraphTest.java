@@ -13,7 +13,7 @@ public class GraphTest {
 
 	@Test
 	public void testAddEdge() {
-		Graph testGraph = new Graph();
+		DirectedGraph testGraph = new DirectedGraph();
 		testGraph.addEdge(5, 5, 10, 10, 0.44, 11);
 		Map <Point, Set<Edge>> adj = testGraph.getAdjList();
 		Set<Edge> edges = adj.get(new Point(5,5));
@@ -24,7 +24,7 @@ public class GraphTest {
 
 	@Test
 	public void testCalcEdgeDist() {
-		Graph testGraph = new Graph();
+		DirectedGraph testGraph = new DirectedGraph();
 		testGraph.addEdge(0.125, 0.125, 0.25, 0.125, 13.9, 10);
 		testGraph.addEdge(0.25, 0.125, 0.375, 0.125, 13.9, 10);
 		testGraph.addEdge(0.375, 0.125, 0.50, 0.125, 13.9, 10);
@@ -48,7 +48,7 @@ public class GraphTest {
 
 	@Test
 	public void testGetNumVertices() {
-		Graph testGraph = new Graph();
+		DirectedGraph testGraph = new DirectedGraph();
 		testGraph.addEdge(5, 5, 10, 10, 0.44, 11);
 		assertEquals("2 vertices shld be there", 2, testGraph.getNumVertices());
 		testGraph.addEdge(5, 5.1, 10, 10, 0.44, 11);
@@ -62,7 +62,7 @@ public class GraphTest {
 
 	@Test
 	public void testGetVertices() {
-		Graph testGraph = new Graph();
+		DirectedGraph testGraph = new DirectedGraph();
 		testGraph.addEdge(5, 5, 10, 10, 0.44, 11);
 		assertTrue("point 1 should be there", testGraph.getVertices().contains(new Point(5,5)));
 		assertTrue("point 2 should be there", testGraph.getVertices().contains(new Point(10,10)));

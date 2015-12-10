@@ -9,12 +9,12 @@ import java.util.Set;
 
 import util.DistanceHelper;
 
-public class Graph{
+public class DirectedGraph{
 	// it is a directed graph
 	private Map<Point, Set<Edge>> adjList;
 	private Set<Point> vertices;
 	
-	public Graph(){
+	public DirectedGraph(){
 		this.adjList = new HashMap<Point, Set<Edge>>();
 		this.vertices = new HashSet<Point>();
 	}
