@@ -4,7 +4,9 @@ import model.Point;
 
 public class Helper {
 	
-	private static final int XAXIS_TOWARDS_EAST = 1;
+	public static final int XAXIS_TOWARDS_EAST = 1;
+	public static final int YAXIS_TOWARDS_NORTH = -1;
+	
 	private static final double EARTH_RADIUS_IN_MILES=3958.75;
 	private static final double MILE_TO_KM=1.609344;
 	private static final double EARTH_RADIUS_IN_KM = EARTH_RADIUS_IN_MILES * MILE_TO_KM;
