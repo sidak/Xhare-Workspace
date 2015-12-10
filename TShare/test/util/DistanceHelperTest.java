@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import model.Point;
 
-public class HelperTest {
+public class DistanceHelperTest {
 
 	@Test
 	public void testDistBetweenPointPoint() {

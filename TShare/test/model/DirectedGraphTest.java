@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-public class GraphTest {
+public class DirectedGraphTest {
 
 	@Test
 	public void testAddEdge() {
@@ -42,7 +42,7 @@ public class GraphTest {
 		testGraph.addEdge(0.5, 0.375, 0.5, 0.5, 13.9, 10);
 		
 		assertEquals("distance should be 83.4 km", 83.4, 
-				testGraph.calcEdgeDist(new Point(0.125, 0.125), new Point(0.5, 0.5)), 0.0000001);
+				testGraph.calcEdgeDistAndTime(new Point(0.125, 0.125), new Point(0.5, 0.5))[0], 0.0000001);
 		
 	}
 
