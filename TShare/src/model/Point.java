@@ -64,4 +64,8 @@ public class Point {
 			return false;
 		return true;
 	}
+	
+	public String toString(){
+		return (""+getLat() + " " +getLng());
+	}
 }

@@ -51,12 +51,12 @@ public class Graph{
 			Set<Edge> edges = adjList.get(pdp.getPoint());
 			Iterator<Edge> it = edges.iterator();
 			while(it.hasNext()){	
-				
-				Point childPt = it.next().getDest();
-				double edgeDist = it.next().getDist();
+				Edge edge = it.next();
+				Point childPt = edge.getDest();
+				double edgeDist = edge.getDist();
 				double pathDist = pdp.getPathDist() + edgeDist;
 				double heurDist = Helper.distBetween(childPt, dest);
-				if(childPt.isGeoEqual(src)){
+				if(childPt.isGeoEqual(dest)){
 					return pathDist;
 				}
 				PointDistPair childPdp = new PointDistPair(childPt, pathDist, heurDist);
