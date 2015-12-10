@@ -32,12 +32,24 @@ public class Preprocessor {
 		grids = new ArrayList<Grid>();
 		gridDistMatrix = new ArrayList< List<Double> >();
 		scan = new Scanner(System.in);
-		
+		System.out.println("Starting Work");
 		takeInput();
 		makeGrids();
 		setAllGridCenters();
 		calcGridDistMatrix();
 		
+		System.out.println("Done Everything");
+	}
+
+	private static void printGridDistanceMatrix() {
+		System.out.println("Size of Grid Distance Matrix is "+ gridDistMatrix.size() +"\n");
+		System.out.println("The grid distance matrix is as follows\n");
+		for(int i=0; i<gridDistMatrix.size(); i++){
+			for(int j=0; j<gridDistMatrix.get(i).size(); j++){
+				System.out.print("" + gridDistMatrix.get(i).get(j) + " ");
+			}
+			System.out.print("\n");
+		}
 	}
 
 	private static void takeInput() {
@@ -57,14 +69,16 @@ public class Preprocessor {
 	}
 
 	private static Point findNearestPointToGridCenter(int gridIdx) {
+		if(!gridIdxMap.containsKey(gridIdx)){
+			return grids.get(gridIdx).getGeoCenter();
+		}
 		List<Point> ptList = gridIdxMap.get(gridIdx);
-		
 		Grid grid = grids.get(gridIdx);
 		double minDist = Double.MAX_VALUE;
 		
 		Point geoCenter = grid.getGeoCenter();
 		Point roadNetworkCenter = null;
-		
+	
 		for(int j = 0; j<ptList.size(); j++){
 			double ptDist = Helper.distBetween(geoCenter, ptList.get(j));
 			if(Double.compare(ptDist, minDist) <= 0 ){
@@ -81,14 +95,16 @@ public class Preprocessor {
 		Iterator<Point> vertexIterator = graph.getVertices().iterator();
 		
 		while(vertexIterator.hasNext()){
-			int idx = calcGridIndex(vertexIterator.next());
-			
+			Point pt = vertexIterator.next();
+			//System.out.println("Mapping the pt: " + pt.toString());
+			int idx = calcGridIndex(pt);
+			//System.out.println("Grid idx in which it lies " + idx);
 			if(!gridIdxMap.containsKey(idx)){
 				ArrayList<Point> ptList = new ArrayList<Point>();
-				ptList.add(vertexIterator.next());
+				ptList.add(pt);
 				gridIdxMap.put(idx, ptList);
 			}
-			gridIdxMap.get(idx).add(vertexIterator.next());
+			gridIdxMap.get(idx).add(pt);
 		}
 	}
 	
@@ -98,6 +114,9 @@ public class Preprocessor {
 		int idxLat = Collections.binarySearch(gridLats, lat);
 		int idxLng = Collections.binarySearch(gridLngs, lng);
 		
+		idxLat = (-1*(idxLat+1)) -1;
+		idxLng = (-1*(idxLng +1))-1;
+		//System.out.println("idxLat is : " + idxLat + " idxLng is : " +idxLng);
 		return (idxLat*numGridsX + idxLng);
 	}
 
@@ -108,14 +127,17 @@ public class Preprocessor {
 			for(int j=0; j<numGrids; j++){
 				
 				if(i==j)distances.add(0.0);
-				Grid destGrid = grids.get(j);
-				double gridDistance = graph.calcEdgeDist(srcGrid.getCenter(), destGrid.getCenter());
-				distances.add(gridDistance);
-				
+				else{
+					Grid destGrid = grids.get(j);
+					double gridDistance = graph.calcEdgeDist(srcGrid.getCenter(), destGrid.getCenter());
+					distances.add(gridDistance);
+				}
 			}
-			gridDistMatrix.get(i).addAll(distances);
-			distances.clear();
+			//gridDistMatrix. = new ArrayList<double>();
+			gridDistMatrix.add(distances);
+			//distances.clear();
 		}
+		printGridDistanceMatrix();
 	}
 	
 	private static void makeGrids() {
@@ -149,7 +171,7 @@ public class Preprocessor {
 				}
 				else maxLng = Helper.findLngTowardEast(gridLength, startLat, startLng);
 				
-				if(j==0) gridLngs.add(maxLng);
+				if(i==0) gridLngs.add(maxLng);
 				
 				int gridId = i*numGridsX + j;
 				grids.add(new Grid(gridId, startLat, startLng, maxLat, maxLng));
@@ -162,6 +184,17 @@ public class Preprocessor {
 			
 			gridLats.add(startLat);
 		}
+		System.out.println("The grid boundary latitudes are");
+		for(int i=0; i<gridLats.size(); i++){
+			System.out.print(gridLats.get(i) +" ");
+		}
+		System.out.print("\n");
+		System.out.println("The grid boundary longitudes are");
+		for(int i=0; i<gridLngs.size(); i++){
+			System.out.print(gridLngs.get(i) +" ");
+		}
+		System.out.println("\n");
+		
 	}
 
 	private static boolean isUnevenDivisionAlongX(double startLat, double startLng) {
@@ -175,11 +208,13 @@ public class Preprocessor {
 	}
 
 	private static void takeGridSizeInput() {
+		//System.out.println("taking grid sz inp");
 		gridLength = scan.nextDouble();
 		gridBreadth = scan.nextDouble();		
 	}
 
 	private static void takeMapInput() {
+		//System.out.println("taking map inp");
 		inputLowerLeftPoint();
 		inputUpperRightPoint();
 	}
@@ -195,6 +230,7 @@ public class Preprocessor {
 	}
 	// TODO: take care of units of speed limit
 	private static  void takeGraphInput() {
+		//System.out.println("taking graph inp");
 		double lat1, lng1, lat2, lng2, distInKiloMeters, sl;
 		
 		lat1 = scan.nextDouble();

@@ -48,6 +48,9 @@ public class Graph{
 			PointDistPair pdp = minQueue.peek();
 			minQueue.remove();
 			
+			if(!adjList.containsKey(pdp.getPoint())){
+				return -1.0;
+			}
 			Set<Edge> edges = adjList.get(pdp.getPoint());
 			Iterator<Edge> it = edges.iterator();
 			while(it.hasNext()){	
