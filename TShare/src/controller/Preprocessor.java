@@ -11,6 +11,8 @@ import java.util.Scanner;
 import model.DirectedGraph;
 import model.Grid;
 import model.Point;
+import model.SpatialIndex;
+import model.TemporalIndex;
 import util.CompareDouble;
 import util.DistanceHelper;
 
@@ -28,6 +30,9 @@ public class Preprocessor {
 	private static int numGridsX, numGridsY;
 	private static List<Double> gridLngs, gridLats;
 	private static Map<Integer, List<Point> > gridIdxMap;
+	private static Map<Integer, List<SpatialIndex>> spatialGridIndex;
+	private static Map<Integer, List<TemporalIndex>> temporalGridIndex;
+	
 	
 	public static void main(String[] args) {
 		graph = new DirectedGraph();
@@ -56,12 +61,52 @@ public class Preprocessor {
 	}
 
 	private static void computeTemporalGridIndex() {
-		// TODO Auto-generated method stub
+		for(int i=0; i<numGrids; i++){
+			List<Double> times = gridTimeMatrix.get(i);
+			
+			List<TemporalIndex> temporalIndex = new ArrayList<TemporalIndex>();
+			for(int j=0; j<times.size(); j++){
+				temporalIndex.add(new TemporalIndex(j, times.get(j)));
+			}
+			Collections.sort(temporalIndex);
+			
+			int lastNegIdx = -1;
+			for(int j=0; j<temporalIndex.size(); j++){
+				if(CompareDouble.equals(temporalIndex.get(j).getGridTime(), -1.0)){
+					lastNegIdx = j;
+				}
+				else break;
+			}
+			int idxSize = temporalIndex.size();
+			temporalIndex = temporalIndex.subList(lastNegIdx +1, idxSize);
+			
+			temporalGridIndex.put(i, temporalIndex);
+		}
 		
 	}
 
 	private static void computeSpatialGridIndex() {
-		// TODO Auto-generated method stub
+		for(int i=0; i<numGrids; i++){
+			List<Double> distances = gridDistMatrix.get(i);
+			
+			List<SpatialIndex> spatialIndex = new ArrayList<SpatialIndex>();
+			for(int j=0; j<distances.size(); j++){
+				spatialIndex.add(new SpatialIndex(j, distances.get(j)));
+			}
+			Collections.sort(spatialIndex);
+			
+			int lastNegIdx = -1;
+			for(int j=0; j<spatialIndex.size(); j++){
+				if(CompareDouble.equals(spatialIndex.get(j).getGridDist(), -1.0)){
+					lastNegIdx = j;
+				}
+				else break;
+			}
+			
+			int idxSize = spatialIndex.size();
+			spatialIndex = spatialIndex.subList(lastNegIdx +1, idxSize);
+			spatialGridIndex.put(i, spatialIndex);
+		}
 		
 	}
 
@@ -256,7 +301,7 @@ public class Preprocessor {
 		maxMapLat = scan.nextDouble();
 		maxMapLng = scan.nextDouble();
 	}
-
+	
 	private static void inputLowerLeftPoint() {
 		minMapLat = scan.nextDouble();
 		minMapLng = scan.nextDouble();
