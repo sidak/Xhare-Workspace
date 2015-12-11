@@ -61,11 +61,13 @@ public class Preprocessor {
 	}
 
 	private static void computeTemporalGridIndex() {
+		temporalGridIndex = new HashMap<Integer, List<TemporalIndex>>();
 		for(int i=0; i<numGrids; i++){
 			List<Double> times = gridTimeMatrix.get(i);
 			
 			List<TemporalIndex> temporalIndex = new ArrayList<TemporalIndex>();
 			for(int j=0; j<times.size(); j++){
+				if(i==j) continue;
 				temporalIndex.add(new TemporalIndex(j, times.get(j)));
 			}
 			Collections.sort(temporalIndex);
@@ -81,16 +83,26 @@ public class Preprocessor {
 			temporalIndex = temporalIndex.subList(lastNegIdx +1, idxSize);
 			
 			temporalGridIndex.put(i, temporalIndex);
+			
+			if(temporalIndex.size()>0){
+				System.out.println("Printing temporalIndex for Grid " +i);
+				for(int j=0; j<temporalIndex.size(); j++){
+					System.out.print(temporalIndex.get(j).getGridIdx() + " ");
+				}
+				System.out.print("\n");
+			}
 		}
 		
 	}
 
 	private static void computeSpatialGridIndex() {
+		spatialGridIndex = new HashMap<Integer, List<SpatialIndex>>();
 		for(int i=0; i<numGrids; i++){
 			List<Double> distances = gridDistMatrix.get(i);
 			
 			List<SpatialIndex> spatialIndex = new ArrayList<SpatialIndex>();
 			for(int j=0; j<distances.size(); j++){
+				if(i==j) continue;
 				spatialIndex.add(new SpatialIndex(j, distances.get(j)));
 			}
 			Collections.sort(spatialIndex);
@@ -106,6 +118,14 @@ public class Preprocessor {
 			int idxSize = spatialIndex.size();
 			spatialIndex = spatialIndex.subList(lastNegIdx +1, idxSize);
 			spatialGridIndex.put(i, spatialIndex);
+			
+			if(spatialIndex.size()>0){
+				System.out.println("Printing spatialIndex for Grid " +i);
+				for(int j=0; j<spatialIndex.size(); j++){
+					System.out.print(spatialIndex.get(j).getGridIdx() + " ");
+				}
+				System.out.print("\n");
+			}
 		}
 		
 	}
