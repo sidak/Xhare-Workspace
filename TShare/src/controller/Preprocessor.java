@@ -8,33 +8,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import index.SpatialIndex;
+import index.TemporalIndex;
 import model.DirectedGraph;
 import model.Grid;
 import model.Point;
-import model.SpatialIndex;
-import model.TemporalIndex;
 import util.CompareDouble;
 import util.DistanceHelper;
 
 public class Preprocessor {
 	
-	private static List< List<Double> > gridDistMatrix;
-	private static List< List<Double> > gridTimeMatrix;
-	private static DirectedGraph graph;
-	private static List<Grid> grids;
-	private static Scanner scan;
-	private static double minMapLat, minMapLng;
-	private static double maxMapLat, maxMapLng;
-	private static double gridLength, gridBreadth;
-	private static int numGrids;
-	private static int numGridsX, numGridsY;
-	private static List<Double> gridLngs, gridLats;
-	private static Map<Integer, List<Point> > gridIdxMap;
-	private static Map<Integer, List<SpatialIndex>> spatialGridIndex;
-	private static Map<Integer, List<TemporalIndex>> temporalGridIndex;
+	private List< List<Double> > gridDistMatrix;
+	private List< List<Double> > gridTimeMatrix;
+	private DirectedGraph graph;
+	private List<Grid> grids;
+	private Scanner scan;
+	private double minMapLat, minMapLng;
+	private double maxMapLat, maxMapLng;
+	private double gridLength, gridBreadth;
+	private int numGrids;
+	private int numGridsX, numGridsY;
+	private List<Double> gridLngs, gridLats;
+	private Map<Integer, List<Point> > gridIdxMap;
+	private Map<Integer, List<SpatialIndex>> spatialGridIndex;
+	private Map<Integer, List<TemporalIndex>> temporalGridIndex;
 	
-	
-	public static void main(String[] args) {
+	public Preprocessor(){
+		doPreprocessing();
+	}
+	public void doPreprocessing() {
 		graph = new DirectedGraph();
 		grids = new ArrayList<Grid>();
 		gridDistMatrix = new ArrayList< List<Double> >();
@@ -50,17 +52,17 @@ public class Preprocessor {
 		System.out.println("Done Everything");
 	}
 
-	private static void saveToFile() {
+	private void saveToFile() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	private static void computeSpatioTemporalGridIndex() {
+	private void computeSpatioTemporalGridIndex() {
 		computeSpatialGridIndex();
 		computeTemporalGridIndex();
 	}
 
-	private static void computeTemporalGridIndex() {
+	private void computeTemporalGridIndex() {
 		temporalGridIndex = new HashMap<Integer, List<TemporalIndex>>();
 		for(int i=0; i<numGrids; i++){
 			List<Double> times = gridTimeMatrix.get(i);
@@ -95,7 +97,7 @@ public class Preprocessor {
 		
 	}
 
-	private static void computeSpatialGridIndex() {
+	private void computeSpatialGridIndex() {
 		spatialGridIndex = new HashMap<Integer, List<SpatialIndex>>();
 		for(int i=0; i<numGrids; i++){
 			List<Double> distances = gridDistMatrix.get(i);
@@ -130,7 +132,7 @@ public class Preprocessor {
 		
 	}
 
-	private static void printGridMatrix(List<List<Double>> gridMatrix) {
+	private void printGridMatrix(List<List<Double>> gridMatrix) {
 		System.out.println("Size of Matrix is "+ gridMatrix.size() +"\n");
 		for(int i=0; i<gridMatrix.size(); i++){
 			for(int j=0; j<gridMatrix.get(i).size(); j++){
@@ -140,23 +142,24 @@ public class Preprocessor {
 		}
 	}
 
-	private static void takeInput() {
+	private void takeInput() {
 		takeGraphInput();
 		takeMapInput();
 		takeGridSizeInput();
 	}
 
-	private static void setAllGridCenters() {
+	private void setAllGridCenters() {
 		
 		mapPointsToGrids();
 		for(int i = 0; i<numGrids; i++){
 			Point roadNetworkCenter = findNearestPointToGridCenter(i);
+			System.out.println("Grid center for grid " + i + " is " + roadNetworkCenter.toString());
 			grids.get(i).setCenter(roadNetworkCenter);
 		}
 		
 	}
 
-	private static Point findNearestPointToGridCenter(int gridIdx) {
+	private Point findNearestPointToGridCenter(int gridIdx) {
 		if(!gridIdxMap.containsKey(gridIdx)){
 			return grids.get(gridIdx).getGeoCenter();
 		}
@@ -177,7 +180,7 @@ public class Preprocessor {
 		return roadNetworkCenter;
 	}
 
-	private static void mapPointsToGrids() {
+	private void mapPointsToGrids() {
 		gridIdxMap = new HashMap<Integer, List<Point> >();
 		
 		Iterator<Point> vertexIterator = graph.getVertices().iterator();
@@ -196,7 +199,7 @@ public class Preprocessor {
 		}
 	}
 	
-	private static int calcGridIndex(Point pt){
+	public int calcGridIndex(Point pt){
 		double lat = pt.getLat();
 		double lng = pt.getLng();
 		int idxLat = Collections.binarySearch(gridLats, lat);
@@ -208,7 +211,7 @@ public class Preprocessor {
 		return (idxLat*numGridsX + idxLng);
 	}
 
-	private static void calcGridDistAndTimeMatrix() {
+	private void calcGridDistAndTimeMatrix() {
 		for(int i=0; i<numGrids; i++){
 			Grid srcGrid = grids.get(i);
 			List<Double> distances = new ArrayList<Double>(); 
@@ -233,14 +236,14 @@ public class Preprocessor {
 		printGridDistAndTimeMatrix();
 	}
 
-	private static void printGridDistAndTimeMatrix() {
+	private void printGridDistAndTimeMatrix() {
 		System.out.println("The grid distance matrix is as follows\n");
 		printGridMatrix(gridDistMatrix);
 		System.out.println("The grid time matrix is as follows\n");
 		printGridMatrix(gridTimeMatrix);
 	}
 	
-	private static void makeGrids() {
+	private void makeGrids() {
 		double mapLength = DistanceHelper.distBetween(maxMapLat, minMapLng, maxMapLat, maxMapLng);
 		double mapBreadth = DistanceHelper.distBetween(minMapLat, minMapLng, maxMapLat, minMapLng);
 		numGridsX = (int)Math.ceil(mapLength/gridLength);
@@ -297,37 +300,37 @@ public class Preprocessor {
 		
 	}
 
-	private static boolean isUnevenDivisionAlongX(double startLat, double startLng) {
+	private boolean isUnevenDivisionAlongX(double startLat, double startLng) {
 		double distFromMaxMapLng = DistanceHelper.distBetween(startLat, startLng, startLat, maxMapLng);
 		return CompareDouble.lessThan(distFromMaxMapLng, gridLength);		
 	}
 
-	private static boolean isUnevenDivisionAlongY(double startLat, double startLng) {
+	private boolean isUnevenDivisionAlongY(double startLat, double startLng) {
 		double distFromMaxMapLat = DistanceHelper.distBetween(startLat, startLng, maxMapLat, startLng);
 		return CompareDouble.lessThan(distFromMaxMapLat, gridBreadth);	
 	}
 
-	private static void takeGridSizeInput() {
+	private void takeGridSizeInput() {
 		gridLength = scan.nextDouble();
 		gridBreadth = scan.nextDouble();		
 	}
 
-	private static void takeMapInput() {
+	private void takeMapInput() {
 		inputLowerLeftPoint();
 		inputUpperRightPoint();
 	}
 
-	private static void inputUpperRightPoint() {
+	private void inputUpperRightPoint() {
 		maxMapLat = scan.nextDouble();
 		maxMapLng = scan.nextDouble();
 	}
 	
-	private static void inputLowerLeftPoint() {
+	private void inputLowerLeftPoint() {
 		minMapLat = scan.nextDouble();
 		minMapLng = scan.nextDouble();
 	}
 	// TODO: take care of units of speed limit
-	private static  void takeGraphInput() {
+	private void takeGraphInput() {
 		double lat1, lng1, lat2, lng2, distInKiloMeters, sl;
 		
 		lat1 = scan.nextDouble();
@@ -349,7 +352,7 @@ public class Preprocessor {
 		
 	}
 	
-	private static boolean isMoreInput(double dist){
+	private boolean isMoreInput(double dist){
 		return Double.compare(dist, -1.0) == 1 ;
 	}
 }
