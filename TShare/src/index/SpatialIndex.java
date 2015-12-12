@@ -1,4 +1,4 @@
-package model;
+package index;
 
 import util.CompareDouble;
 
