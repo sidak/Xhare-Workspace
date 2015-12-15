@@ -8,10 +8,14 @@ public class TaxiStatus {
 	private int id;
 	private Date timestamp;
 	private Point location;
-	private int numBoardedPassengers;
 	private int numBookedPassengers;
 	private int capacity;
-	private List<Point> schedule;
+	private List<Point> scheduleLocations;
+	private List<Date> scheduleTimes;
+	
+	public TaxiStatus(){
+		
+	}
 	
 	public int getId() {
 		return id;
@@ -31,12 +35,7 @@ public class TaxiStatus {
 	public void setLocation(Point location) {
 		this.location = location;
 	}
-	public int getNumBoardedPassengers() {
-		return numBoardedPassengers;
-	}
-	public void setNumBoardedPassengers(int numBoardedPassengers) {
-		this.numBoardedPassengers = numBoardedPassengers;
-	}
+	
 	public int getNumBookedPassengers() {
 		return numBookedPassengers;
 	}
@@ -49,12 +48,19 @@ public class TaxiStatus {
 	public void setCapacity(int capacity) {
 		this.capacity = capacity;
 	}
-	public List<Point> getSchedule() {
-		return schedule;
+	public List<Point> getScheduleLocations() {
+		return scheduleLocations;
 	}
-	public void setSchedule(List<Point> schedule) {
-		this.schedule = schedule;
+	public void setScheduleLocations(List<Point> scheduleLocations) {
+		this.scheduleLocations = scheduleLocations;
 	}
+	public List<Date> getScheduleTimes() {
+		return scheduleTimes;
+	}
+	public void setScheduleTimes(List<Date> scheduleTimes) {
+		this.scheduleTimes = scheduleTimes;
+	}
+	
 	
 	
 }
