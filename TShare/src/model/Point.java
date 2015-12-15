@@ -1,6 +1,6 @@
 package model;
 
-import util.CompareDouble;
+import util.DoubleHelper;
 
 public class Point {
 	private double lat;
@@ -28,8 +28,8 @@ public class Point {
 	}
 	
 	public boolean isGeoEqual(Point pt){
-		if(CompareDouble.equals(getLat(), pt.getLat()) &&
-				CompareDouble.equals(getLng(), pt.getLng()) ) return true;
+		if(DoubleHelper.equals(getLat(), pt.getLat()) &&
+				DoubleHelper.equals(getLng(), pt.getLng()) ) return true;
 		
 		return false;
 	}

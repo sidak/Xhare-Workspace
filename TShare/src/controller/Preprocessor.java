@@ -13,7 +13,7 @@ import index.TemporalIndex;
 import model.DirectedGraph;
 import model.Grid;
 import model.Point;
-import util.CompareDouble;
+import util.DoubleHelper;
 import util.DistanceHelper;
 
 public class Preprocessor {
@@ -76,7 +76,7 @@ public class Preprocessor {
 			
 			int lastNegIdx = -1;
 			for(int j=0; j<temporalIndex.size(); j++){
-				if(CompareDouble.equals(temporalIndex.get(j).getGridTime(), -1.0)){
+				if(DoubleHelper.equals(temporalIndex.get(j).getGridTime(), -1.0)){
 					lastNegIdx = j;
 				}
 				else break;
@@ -111,7 +111,7 @@ public class Preprocessor {
 			
 			int lastNegIdx = -1;
 			for(int j=0; j<spatialIndex.size(); j++){
-				if(CompareDouble.equals(spatialIndex.get(j).getGridDist(), -1.0)){
+				if(DoubleHelper.equals(spatialIndex.get(j).getGridDist(), -1.0)){
 					lastNegIdx = j;
 				}
 				else break;
@@ -302,12 +302,12 @@ public class Preprocessor {
 
 	private boolean isUnevenDivisionAlongX(double startLat, double startLng) {
 		double distFromMaxMapLng = DistanceHelper.distBetween(startLat, startLng, startLat, maxMapLng);
-		return CompareDouble.lessThan(distFromMaxMapLng, gridLength);		
+		return DoubleHelper.lessThan(distFromMaxMapLng, gridLength);		
 	}
 
 	private boolean isUnevenDivisionAlongY(double startLat, double startLng) {
 		double distFromMaxMapLat = DistanceHelper.distBetween(startLat, startLng, maxMapLat, startLng);
-		return CompareDouble.lessThan(distFromMaxMapLat, gridBreadth);	
+		return DoubleHelper.lessThan(distFromMaxMapLat, gridBreadth);	
 	}
 
 	private void takeGridSizeInput() {

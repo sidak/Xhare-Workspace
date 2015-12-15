@@ -1,6 +1,6 @@
 package util;
 
-public class CompareDouble {
+public class DoubleHelper {
 	
 	private final static double EPSILON = 0.000001;
 	

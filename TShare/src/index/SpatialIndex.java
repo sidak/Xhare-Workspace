@@ -1,6 +1,6 @@
 package index;
 
-import util.CompareDouble;
+import util.DoubleHelper;
 
 public class SpatialIndex implements Comparable<SpatialIndex>{
 	private int gridIdx;
@@ -25,8 +25,8 @@ public class SpatialIndex implements Comparable<SpatialIndex>{
 	
 	@Override
 	public int compareTo(SpatialIndex spatialIndex) {
-		if(CompareDouble.greaterThan(getGridDist(), spatialIndex.getGridDist())) return 1;
-		else if(CompareDouble.lessThan(getGridDist(), spatialIndex.getGridDist())) return -1;
+		if(DoubleHelper.greaterThan(getGridDist(), spatialIndex.getGridDist())) return 1;
+		else if(DoubleHelper.lessThan(getGridDist(), spatialIndex.getGridDist())) return -1;
 		else return 0;
 	}
 }

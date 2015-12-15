@@ -1,6 +1,6 @@
 package index;
 
-import util.CompareDouble;
+import util.DoubleHelper;
 
 public class TemporalIndex implements Comparable<TemporalIndex> {
 	private int gridIdx;
@@ -24,8 +24,8 @@ public class TemporalIndex implements Comparable<TemporalIndex> {
 	}
 	@Override
 	public int compareTo(TemporalIndex temporalIndex) {
-		if(CompareDouble.greaterThan(getGridTime(), temporalIndex.getGridTime())) return 1;
-		else if(CompareDouble.lessThan(getGridTime(), temporalIndex.getGridTime())) return -1;
+		if(DoubleHelper.greaterThan(getGridTime(), temporalIndex.getGridTime())) return 1;
+		else if(DoubleHelper.lessThan(getGridTime(), temporalIndex.getGridTime())) return -1;
 		else return 0;
 	}
 	

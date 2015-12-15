@@ -84,7 +84,6 @@ public class DualSidedSearch {
 				deliverableGridsOrderedSpatially.add(gridIdx);
 			}
 		}
-		// TODO: filter out taxis, make a method	
 		
 		List<TaxiIndex> srcTaxis = filterNotPickableTaxis(taxiGridIndex.get(srcGridIdx), 0);
 		List<TaxiIndex> destTaxis = filterNotPickableTaxis(taxiGridIndex.get(destGridIdx), 0);
@@ -116,9 +115,7 @@ public class DualSidedSearch {
 					deliverableGridIdx ++;
 				}
 				taxiIntersectionList = ListHelper.findListIntersection(srcTaxis, destTaxis);
-			}
-			
-			
+			}	
 			
 		}
 		

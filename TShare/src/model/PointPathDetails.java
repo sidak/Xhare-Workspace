@@ -1,6 +1,6 @@
 package model;
 
-import util.CompareDouble;
+import util.DoubleHelper;
 
 public class PointPathDetails implements Comparable<PointPathDetails>{
 	private Point point;
@@ -50,8 +50,8 @@ public class PointPathDetails implements Comparable<PointPathDetails>{
 		totalDistA = getPathDist() + getHeuristicDist();
 		totalDistB = pdp.getPathDist() + pdp.getHeuristicDist();
 		
-		if(CompareDouble.greaterThan(totalDistA, totalDistB)) return 1;
-		else if (CompareDouble.lessThan(totalDistA, totalDistB)) return -1;
+		if(DoubleHelper.greaterThan(totalDistA, totalDistB)) return 1;
+		else if (DoubleHelper.lessThan(totalDistA, totalDistB)) return -1;
 		else return 0;
 	}
 	
