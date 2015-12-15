@@ -55,7 +55,7 @@ public class QuerySchedulerForTaxi {
 		return insertionPositions;
 	}
 					
-	private void insertInSchedule(int querySrcInsertionIdx, int queryDestInsertionIdx) {
+	public void insertInSchedule(int querySrcInsertionIdx, int queryDestInsertionIdx) {
 		taxiStatus.getSchedule().getScheduleLocations()
 			.add(queryInsertionPositions.get(0), query.getPickupPoint());
 		taxiStatus.getSchedule().getScheduleLocations()
@@ -65,6 +65,7 @@ public class QuerySchedulerForTaxi {
 
 	private int calcDistIncrease(int i, int j) {
 		// TODO Auto-generated method stub
+		
 		return 0;
 	}
 
@@ -105,13 +106,45 @@ public class QuerySchedulerForTaxi {
 	 * @return True, if insertion is feasible. Otherwise false.
 	 */
 	public boolean isInsertionFeasible(int i, int j) {
+		
 		if(!canReachQueryPickupPointInTime()){
 			return false;
 		}
+		int timeDelayBySrcInsertion = calcTimeDelayByInsertion(query.getPickupPoint(), i);
 		
-		return false;
+		if(isSubsequentScheduleDestroyed(timeDelayBySrcInsertion, i)){
+			return false;
+		}
+		double scheduledArrivalTimeDest = DistanceHelper.estimatedDynamicTimeInHours(taxiStatus.getSchedule().getScheduleLocations().get(j), query.getPickupPoint());
+		Point prevLoc = taxiStatus.getSchedule().getScheduleLocations().get(j);
+		if(!canReachQueryDeliveryPointInTime(scheduledArrivalTimeDest, prevLoc)){
+			return false;
+		}
+		
+		int timeDelayByDestInsertion = calcTimeDelayByInsertion(query.getDeliveryPoint(), j);
+		
+		if(isSubsequentScheduleDestroyed(timeDelayByDestInsertion, j)){
+			return false;
+		}
+		// TODO: check line 12 comment of algo
+		return true;
 	}
 	
+	private boolean canReachQueryDeliveryPointInTime(double scheduledArrivalTimeDest, Point prevLoc) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	private boolean isSubsequentScheduleDestroyed(int timeDelayBySrcInsertion, int i) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	private int calcTimeDelayByInsertion(Point pickupPoint, int i) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 	public boolean canScheduleQuery(){
 		if(queryInsertionPositions.get(0) == -1 && queryInsertionPositions.get(1) == -1){
 			return false;
