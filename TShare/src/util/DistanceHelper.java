@@ -87,4 +87,16 @@ public class DistanceHelper {
 				);
 	}
 	
+	public static double estimatedDynamicDistance(Point src, Point dest){
+		return 0.0;
+	}
+	
+	public static double estimatedDynamicTimeInHours(Point src, Point dest){
+		return 0.0;
+	}
+	
+	public static long estimatedDynamicTimeInMilliSeconds(Point src, Point dest){
+		return DateTimeHelper.toMilliSeconds(estimatedDynamicTimeInHours(src, dest));
+	}
+	
 }
