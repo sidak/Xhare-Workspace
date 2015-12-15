@@ -10,8 +10,7 @@ public class TaxiStatus {
 	private Point location;
 	private int numBookedPassengers;
 	private int capacity;
-	private List<Point> scheduleLocations;
-	private List<Date> scheduleTimes;
+	private Schedule schedule;
 	
 	public TaxiStatus(){
 		
@@ -48,17 +47,13 @@ public class TaxiStatus {
 	public void setCapacity(int capacity) {
 		this.capacity = capacity;
 	}
-	public List<Point> getScheduleLocations() {
-		return scheduleLocations;
+
+	public Schedule getSchedule() {
+		return schedule;
 	}
-	public void setScheduleLocations(List<Point> scheduleLocations) {
-		this.scheduleLocations = scheduleLocations;
-	}
-	public List<Date> getScheduleTimes() {
-		return scheduleTimes;
-	}
-	public void setScheduleTimes(List<Date> scheduleTimes) {
-		this.scheduleTimes = scheduleTimes;
+
+	public void setSchedule(Schedule schedule) {
+		this.schedule = schedule;
 	}
 	
 	
