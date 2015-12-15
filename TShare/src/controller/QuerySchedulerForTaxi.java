@@ -5,9 +5,11 @@ import java.util.List;
 
 import model.Point;
 import model.Query;
+import model.Schedule;
 import model.TaxiStatus;
 import util.DateTimeHelper;
 import util.DistanceHelper;
+import util.DoubleHelper;
 
 public class QuerySchedulerForTaxi {
 	private Query query;
@@ -21,7 +23,7 @@ public class QuerySchedulerForTaxi {
 		queryInsertionPositions = scheduleQuery();
 	}
 	
-	public int getMinDistanceIncrease(){
+	public double getMinDistanceIncrease(){
 		return calcDistIncrease(queryInsertionPositions.get(0), queryInsertionPositions.get(1));
 	}
 	 
@@ -30,7 +32,7 @@ public class QuerySchedulerForTaxi {
 		
 		int scheduleSize = taxiStatus.getSchedule().getSize();
 		
-		int minDistanceIncrease = Integer.MAX_VALUE;
+		double minDistanceIncrease = Double.MAX_VALUE;
 		int querySrcInsertionIdx = -1;
 		int queryDestInsertionIdx = -1;
 		
@@ -38,8 +40,8 @@ public class QuerySchedulerForTaxi {
 			for(int j = i+1; j<=scheduleSize+1; j++){
 					
 				if(isInsertionFeasible(i,j)){
-					int distanceIncrease = calcDistIncrease(i,j);
-					if(distanceIncrease < minDistanceIncrease){
+					double distanceIncrease = calcDistIncrease(i, j);
+					if(DoubleHelper.lessThan(distanceIncrease, minDistanceIncrease)){
 						minDistanceIncrease = distanceIncrease;
 						querySrcInsertionIdx = i;
 						queryDestInsertionIdx = j;
@@ -55,18 +57,58 @@ public class QuerySchedulerForTaxi {
 		return insertionPositions;
 	}
 					
-	public void insertInSchedule(int querySrcInsertionIdx, int queryDestInsertionIdx) {
-		taxiStatus.getSchedule().getScheduleLocations()
-			.add(queryInsertionPositions.get(0), query.getPickupPoint());
-		taxiStatus.getSchedule().getScheduleLocations()
-		.add(queryInsertionPositions.get(1), query.getDeliveryPoint());
-		// TODO: insert times
+	public void insertInSchedule() {
+		int querySrcInsertionIdx = queryInsertionPositions.get(0);
+		int queryDestInsertionIdx = queryInsertionPositions.get(1);
+		Point pickupPoint = query.getPickupPoint();
+		Point deliveryPoint = query.getDeliveryPoint();
+		List<Point> scheduleLocations = taxiStatus.getSchedule().getScheduleLocations();
+		List<Long> scheduleTimes = taxiStatus.getSchedule().getScheduleTimes();
+		
+		long estimatedArrivalTimeAtSrc, estimatedArrivalTimeAtDest;
+		
+		if(querySrcInsertionIdx == 0){
+			estimatedArrivalTimeAtSrc = DistanceHelper.estimatedDynamicTimeInMilliSeconds(taxiStatus.getLocation(), pickupPoint) + 
+					taxiStatus.getTimestamp();
+			
+		}
+		else{
+			estimatedArrivalTimeAtSrc = DistanceHelper.estimatedDynamicTimeInMilliSeconds(scheduleLocations.get(querySrcInsertionIdx-1), pickupPoint) +
+					scheduleTimes.get(querySrcInsertionIdx-1);
+		}
+		
+		scheduleLocations.add(querySrcInsertionIdx, pickupPoint);
+		scheduleTimes.add(querySrcInsertionIdx, estimatedArrivalTimeAtSrc);
+
+		
+		estimatedArrivalTimeAtDest = DistanceHelper.estimatedDynamicTimeInMilliSeconds(scheduleLocations.get(queryDestInsertionIdx-1), deliveryPoint) +
+				scheduleTimes.get(queryDestInsertionIdx-1);
+		
+		
+		scheduleLocations.add(queryDestInsertionIdx, deliveryPoint);
+		scheduleTimes.add(queryDestInsertionIdx, estimatedArrivalTimeAtDest);
+		
+		taxiStatus.setSchedule(new Schedule(scheduleLocations, scheduleTimes));
 	}
 
-	private int calcDistIncrease(int i, int j) {
-		// TODO Auto-generated method stub
+	private double calcDistIncrease(int i, int j) {
 		
-		return 0;
+		Point pickupPoint = query.getPickupPoint();
+		Point deliveryPoint = query.getDeliveryPoint();
+		List<Point> scheduleLocations = taxiStatus.getSchedule().getScheduleLocations();
+		int scheduleSize = scheduleLocations.size();
+		if(i==0 && j==1){
+			return DistanceHelper.estimatedDynamicDistance(pickupPoint, deliveryPoint) + 
+				    DistanceHelper.estimatedDynamicDistance(deliveryPoint, scheduleLocations.get(0));
+		}
+		else if (i==scheduleSize && j == (scheduleSize + 1)){
+			return DistanceHelper.estimatedDynamicDistance(pickupPoint, scheduleLocations.get(scheduleSize-1)) +
+					DistanceHelper.estimatedDynamicDistance(pickupPoint, deliveryPoint);
+		}
+		else{
+			return DistanceHelper.estimatedDynamicDistance(pickupPoint, scheduleLocations.get(i)) +
+					DistanceHelper.estimatedDynamicDistance(scheduleLocations.get(j-1), deliveryPoint);
+		}
 	}
 
 	
