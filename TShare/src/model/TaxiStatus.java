@@ -1,12 +1,11 @@
 package model;
 
 import java.util.Date;
-import java.util.List;
 
 public class TaxiStatus {
 	
 	private int id;
-	private Date timestamp;
+	private long timestamp;
 	private Point location;
 	private int numBookedPassengers;
 	private int capacity;
@@ -22,10 +21,10 @@ public class TaxiStatus {
 	public void setId(int id) {
 		this.id = id;
 	}
-	public Date getTimestamp() {
+	public Long getTimestamp() {
 		return timestamp;
 	}
-	public void setTimestamp(Date timestamp) {
+	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
 	public Point getLocation() {
