@@ -161,13 +161,15 @@ public class QuerySchedulerForTaxi {
 	private void removePoint(int i) {
 		taxiStatus.getSchedule().getScheduleLocations().remove(i);
 		taxiStatus.getSchedule().getScheduleTimes().remove(i);
-		
+		taxiStatus.getSchedule().getScheduleSlackTimes().remove(i);
+		taxiStatus.getSchedule().getSchedulePointTypes().remove(i);
 	}
 
-	private void insertPoint(int i, Point point, long timeStamp) {
+	private void insertPoint(int i, Point point, long arrivalTime, long lateBound, byte pointType) {
 		taxiStatus.getSchedule().getScheduleLocations().add(i, point);
-		taxiStatus.getSchedule().getScheduleTimes().add(i, timeStamp);
-		
+		taxiStatus.getSchedule().getScheduleTimes().add(i, arrivalTime);
+		taxiStatus.getSchedule().getScheduleSlackTimes().add(i, (lateBound - arrivalTime));
+		taxiStatus.getSchedule().getSchedulePointTypes().add(i, pointType);
 	}
 	
 	/**
@@ -187,7 +189,7 @@ public class QuerySchedulerForTaxi {
 			return false;
 		}
 		
-		insertPoint(i, query.getPickupPoint(), findEstimatedArrivalTimeAtSrc(i));
+		insertPoint(i, query.getPickupPoint(), findEstimatedArrivalTimeAtSrc(i), query.getPickupWindowLateBound(), (byte)0);
 		updateSubsequentSchedule(timeDelayBySrcInsertion, i);
 				
 		if(!canReachQueryDeliveryPointInTime(j)){
@@ -202,17 +204,44 @@ public class QuerySchedulerForTaxi {
 			return false;
 		}
 		
-		insertPoint(j, query.getDeliveryPoint(), findEstimatedArrivalTimeAtDest(j));
+		insertPoint(j, query.getDeliveryPoint(), findEstimatedArrivalTimeAtDest(j), query.getDeliveryWindowLateBound(), (byte)1);
 		updateSubsequentSchedule(timeDelayByDestInsertion, j);
 		
 		return true;
 	}
 	
-	private void updateSubsequentSchedule(long timeDelayBySrcInsertion, int i) {
-		// TODO Auto-generated method stub
+	private void updateSubsequentSchedule(long timeDelayByPointInsertion, int idx) {
+		List<Long> slackTimes = taxiStatus.getSchedule().getScheduleSlackTimes();
+		List<Long> arrivalTimes = taxiStatus.getSchedule().getScheduleTimes();
+		List<Point> scheduleLocations = taxiStatus.getSchedule().getScheduleLocations();
+		List<Byte> pointTypes = taxiStatus.getSchedule().getSchedulePointTypes();
+		int scheduleSize = slackTimes.size();
+		
+		for(int i = idx+1; i<scheduleSize; i++){
+			long oldArrivalTime = arrivalTimes.get(i);
+			arrivalTimes.set(i, oldArrivalTime + timeDelayByPointInsertion);
+			
+			long oldSlackTime = slackTimes.get(i);
+			slackTimes.set(i, oldSlackTime - timeDelayByPointInsertion);
+			
+		}
+		
+		taxiStatus.setSchedule(new Schedule(scheduleLocations, arrivalTimes, slackTimes, pointTypes));
 		
 	}
-
+	
+	private boolean isSubsequentScheduleDestroyed(long timeDelayByPointInsertion, int idx) {
+		List<Long> slackTimes = taxiStatus.getSchedule().getScheduleSlackTimes();
+		int scheduleSize = slackTimes.size();
+		
+		for(int i = idx; i<scheduleSize; i++){
+			if((slackTimes.get(i)-timeDelayByPointInsertion) < 0 ){
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	private boolean canReachQueryPickupPointInTime(){
 		long currTime = System.currentTimeMillis();
 		long timeToSrcFromTaxiLoc = DistanceHelper.estimatedDynamicTimeInMilliSeconds(
@@ -239,11 +268,7 @@ public class QuerySchedulerForTaxi {
 		else return true;
 	}
 
-	private boolean isSubsequentScheduleDestroyed(long timeDelayBySrcInsertion, int i) {
-		// TODO Auto-generated method stub
-		
-		return false;
-	}
+	
 	
 	/**
 	 * Calculate time delay caused by inserting a new point before ith point in the schedule 
