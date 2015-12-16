@@ -16,7 +16,6 @@ public class QuerySchedulerForTaxi {
 	private List<Integer> queryInsertionPositions;
 	private Schedule bestSchedule;
 	
-	
 	public QuerySchedulerForTaxi(Query query, TaxiStatus taxiStatus){
 		this.query = query;
 		this.taxiStatus = taxiStatus;
@@ -63,31 +62,6 @@ public class QuerySchedulerForTaxi {
 		
 		return insertionPositions;
 	}
-	
-	/*
-	public void insertInSchedule() {
-		int querySrcInsertionIdx = queryInsertionPositions.get(0);
-		int queryDestInsertionIdx = queryInsertionPositions.get(1);
-		
-		Point pickupPoint = query.getPickupPoint();
-		Point deliveryPoint = query.getDeliveryPoint();
-		List<Point> scheduleLocations = taxiStatus.getSchedule().getScheduleLocations();
-		List<Long> scheduleTimes = taxiStatus.getSchedule().getScheduleTimes();
-		
-		long estimatedArrivalTimeAtSrc = findEstimatedArrivalTimeAtSrc(querySrcInsertionIdx);
-		
-		scheduleLocations.add(querySrcInsertionIdx, pickupPoint);
-		scheduleTimes.add(querySrcInsertionIdx, estimatedArrivalTimeAtSrc);
-			
-		long estimatedArrivalTimeAtDest = findEstimatedArrivalTimeAtDest(queryDestInsertionIdx);
-		
-		
-		scheduleLocations.add(queryDestInsertionIdx, deliveryPoint);
-		scheduleTimes.add(queryDestInsertionIdx, estimatedArrivalTimeAtDest);
-		
-		taxiStatus.setSchedule(new Schedule(scheduleLocations, scheduleTimes));
-	}
-	*/
 	
 	private long findEstimatedArrivalTimeAtDest(int queryDestInsertionIdx) {
 		Point deliveryPoint = query.getDeliveryPoint();
@@ -265,8 +239,6 @@ public class QuerySchedulerForTaxi {
 		else return true;
 	}
 
-	
-	
 	/**
 	 * Calculate time delay caused by inserting a new point before ith point in the schedule 
 	 * @param point The point which is inserted
