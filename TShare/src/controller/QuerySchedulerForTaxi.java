@@ -162,14 +162,12 @@ public class QuerySchedulerForTaxi {
 		taxiStatus.getSchedule().getScheduleLocations().remove(i);
 		taxiStatus.getSchedule().getScheduleTimes().remove(i);
 		taxiStatus.getSchedule().getScheduleSlackTimes().remove(i);
-		taxiStatus.getSchedule().getSchedulePointTypes().remove(i);
 	}
 
-	private void insertPoint(int i, Point point, long arrivalTime, long lateBound, byte pointType) {
+	private void insertPoint(int i, Point point, long arrivalTime, long lateBound) {
 		taxiStatus.getSchedule().getScheduleLocations().add(i, point);
 		taxiStatus.getSchedule().getScheduleTimes().add(i, arrivalTime);
 		taxiStatus.getSchedule().getScheduleSlackTimes().add(i, (lateBound - arrivalTime));
-		taxiStatus.getSchedule().getSchedulePointTypes().add(i, pointType);
 	}
 	
 	/**
@@ -189,7 +187,7 @@ public class QuerySchedulerForTaxi {
 			return false;
 		}
 		
-		insertPoint(i, query.getPickupPoint(), findEstimatedArrivalTimeAtSrc(i), query.getPickupWindowLateBound(), (byte)0);
+		insertPoint(i, query.getPickupPoint(), findEstimatedArrivalTimeAtSrc(i), query.getPickupWindowLateBound());
 		updateSubsequentSchedule(timeDelayBySrcInsertion, i);
 				
 		if(!canReachQueryDeliveryPointInTime(j)){
@@ -204,7 +202,7 @@ public class QuerySchedulerForTaxi {
 			return false;
 		}
 		
-		insertPoint(j, query.getDeliveryPoint(), findEstimatedArrivalTimeAtDest(j), query.getDeliveryWindowLateBound(), (byte)1);
+		insertPoint(j, query.getDeliveryPoint(), findEstimatedArrivalTimeAtDest(j), query.getDeliveryWindowLateBound());
 		updateSubsequentSchedule(timeDelayByDestInsertion, j);
 		
 		return true;
@@ -214,7 +212,6 @@ public class QuerySchedulerForTaxi {
 		List<Long> slackTimes = taxiStatus.getSchedule().getScheduleSlackTimes();
 		List<Long> arrivalTimes = taxiStatus.getSchedule().getScheduleTimes();
 		List<Point> scheduleLocations = taxiStatus.getSchedule().getScheduleLocations();
-		List<Byte> pointTypes = taxiStatus.getSchedule().getSchedulePointTypes();
 		int scheduleSize = slackTimes.size();
 		
 		for(int i = idx+1; i<scheduleSize; i++){
@@ -226,7 +223,7 @@ public class QuerySchedulerForTaxi {
 			
 		}
 		
-		taxiStatus.setSchedule(new Schedule(scheduleLocations, arrivalTimes, slackTimes, pointTypes));
+		taxiStatus.setSchedule(new Schedule(scheduleLocations, arrivalTimes, slackTimes));
 		
 	}
 	

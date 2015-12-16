@@ -6,14 +6,12 @@ public class Schedule {
 	private List<Point> scheduleLocations;
 	private List<Long> scheduleTimes;
 	private List<Long> scheduleSlackTimes;
-	private List<Byte> schedulePointTypes; 
 	
 	public Schedule(List<Point> scheduleLocations, List<Long> scheduleTimes, 
-			List<Long> scheduleSlackTimes, List<Byte> schedulePointTypes){
+			List<Long> scheduleSlackTimes){
 		this.scheduleLocations = scheduleLocations;
 		this.scheduleTimes = scheduleTimes;
 		this.scheduleSlackTimes = scheduleSlackTimes;
-		this.schedulePointTypes = schedulePointTypes;
 	}
 	public List<Point> getScheduleLocations() {
 		return scheduleLocations;
@@ -33,10 +31,5 @@ public class Schedule {
 	public void setScheduleSlackTimes(List<Long> scheduleSlackTimes) {
 		this.scheduleSlackTimes = scheduleSlackTimes;
 	}
-	public List<Byte> getSchedulePointTypes() {
-		return schedulePointTypes;
-	}
-	public void setSchedulePointTypes(List<Byte> schedulePointTypes) {
-		this.schedulePointTypes = schedulePointTypes;
-	}
+	
 }
