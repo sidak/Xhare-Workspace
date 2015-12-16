@@ -120,28 +120,44 @@ public class QuerySchedulerForTaxi {
 	}
 
 	private double calcDistIncrease(int i, int j) {
-		// TODO: handle when i = j -1 in general case
 		Point pickupPoint = query.getPickupPoint();
 		Point deliveryPoint = query.getDeliveryPoint();
 		List<Point> scheduleLocations = taxiStatus.getSchedule().getScheduleLocations();
 		int scheduleSize = scheduleLocations.size();
-		if(i==0 && j==1){
-			return DistanceHelper.estimatedDynamicDistance(pickupPoint, deliveryPoint) + 
-				    DistanceHelper.estimatedDynamicDistance(deliveryPoint, scheduleLocations.get(0));
-		}
-		else if (i==scheduleSize && j == (scheduleSize + 1)){
-			return DistanceHelper.estimatedDynamicDistance(pickupPoint, scheduleLocations.get(scheduleSize-1)) +
-					DistanceHelper.estimatedDynamicDistance(pickupPoint, deliveryPoint);
+		if(i==(j-1)){
+			if(i==0){
+				return DistanceHelper.estimatedDynamicDistance(pickupPoint, deliveryPoint) + 
+					    DistanceHelper.estimatedDynamicDistance(deliveryPoint, scheduleLocations.get(0));
+			}
+			else if (i==scheduleSize){
+				return DistanceHelper.estimatedDynamicDistance(scheduleLocations.get(scheduleSize-1), pickupPoint) +
+						DistanceHelper.estimatedDynamicDistance(pickupPoint, deliveryPoint);
+			}
+			else{
+				return DistanceHelper.estimatedDynamicDistance(scheduleLocations.get(i-1), pickupPoint)
+						+ DistanceHelper.estimatedDynamicDistance(pickupPoint, deliveryPoint)
+						+ DistanceHelper.estimatedDynamicDistance(deliveryPoint, scheduleLocations.get(j-1))
+						- DistanceHelper.estimatedDynamicDistance(scheduleLocations.get(i-1), scheduleLocations.get(j-1));
+			}
 		}
 		else{
-			return DistanceHelper.estimatedDynamicDistance(pickupPoint, scheduleLocations.get(i)) +
-					DistanceHelper.estimatedDynamicDistance(scheduleLocations.get(j-1), deliveryPoint);
-		}
+			double distIncrease = 0;
+			if(i > 0){
+				distIncrease += DistanceHelper.estimatedDynamicDistance(scheduleLocations.get(i-1), pickupPoint);
+				distIncrease -= DistanceHelper.estimatedDynamicDistance(scheduleLocations.get(i-1), scheduleLocations.get(i));				
+			}
+			distIncrease += DistanceHelper.estimatedDynamicDistance(pickupPoint, scheduleLocations.get(i));
+			
+			if(j<=scheduleSize){
+				distIncrease += DistanceHelper.estimatedDynamicDistance(deliveryPoint, scheduleLocations.get(j-1));
+				distIncrease -= DistanceHelper.estimatedDynamicDistance(scheduleLocations.get(j-2), scheduleLocations.get(j-1));								
+			}
+			distIncrease += DistanceHelper.estimatedDynamicDistance(scheduleLocations.get(j-2), deliveryPoint);
+			return distIncrease;
+		}	
+		
 	}
 
-	
-	
-	
 	private void removePoint(int i) {
 		taxiStatus.getSchedule().getScheduleLocations().remove(i);
 		taxiStatus.getSchedule().getScheduleTimes().remove(i);
