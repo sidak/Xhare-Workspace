@@ -10,7 +10,6 @@ import java.util.Set;
 import util.DistanceHelper;
 
 public class DirectedGraph{
-	// it is a directed graph
 	private Map<Point, Set<Edge>> adjList;
 	private Set<Point> vertices;
 	

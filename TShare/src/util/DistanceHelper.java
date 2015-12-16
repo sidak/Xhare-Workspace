@@ -10,7 +10,7 @@ public class DistanceHelper {
 	private static final double EARTH_RADIUS_IN_MILES=3958.75;
 	private static final double MILE_TO_KM=1.609344;
 	private static final double EARTH_RADIUS_IN_KM = EARTH_RADIUS_IN_MILES * MILE_TO_KM;
-
+	private static final double SPEED_LIMIT_KM_PER_HR = 10;
 
 	/*
 	 * @return return distance between two geo points in kilometers
@@ -88,11 +88,11 @@ public class DistanceHelper {
 	}
 	
 	public static double estimatedDynamicDistance(Point src, Point dest){
-		return 0.0;
+		return distBetween(src, dest);
 	}
 	
 	public static double estimatedDynamicTimeInHours(Point src, Point dest){
-		return 0.0;
+		return estimatedDynamicDistance(src, dest)/SPEED_LIMIT_KM_PER_HR;
 	}
 	
 	public static long estimatedDynamicTimeInMilliSeconds(Point src, Point dest){
