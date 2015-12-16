@@ -1,10 +1,8 @@
 package index;
 
-import java.util.Date;
-
 public class TaxiIndex {
 	private int taxiId;
-	private Date timestamp;
+	private Long timestamp;
 	
 	public int getTaxiId() {
 		return taxiId;
@@ -12,10 +10,10 @@ public class TaxiIndex {
 	public void setTaxiId(int taxiId) {
 		this.taxiId = taxiId;
 	}
-	public Date getTimestamp() {
+	public Long getTimestamp() {
 		return timestamp;
 	}
-	public void setTimestamp(Date timestamp) {
+	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
 }

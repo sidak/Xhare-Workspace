@@ -1,7 +1,6 @@
 package controller;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,15 +134,15 @@ public class DualSidedSearch {
 		
 		return filteredTaxiList;
 	}
-	private boolean canPickupByTaxiFromNearbyGrid(Date taxiTimestamp, double gridTime) {
-		long taxiTimeStampMilliSeconds = DateTimeHelper.toMilliSeconds(taxiTimestamp);
+	private boolean canPickupByTaxiFromNearbyGrid(long taxiTimestamp, double gridTime) {
+		long taxiTimeStampMilliSeconds = taxiTimestamp;
 		long maxTaxiTimeStamp = System.currentTimeMillis() - DateTimeHelper.toMilliSeconds(gridTime);
 		return taxiTimeStampMilliSeconds <= maxTaxiTimeStamp;
 	}
 
 	private boolean cannotPickupFromNearbyGrid(double gridTime) {
 		if((System.currentTimeMillis() + DateTimeHelper.toMilliSeconds(gridTime)) 
-				<= DateTimeHelper.toMilliSeconds(query.getPickupWindowLateBound())){
+				<= query.getPickupWindowLateBound()){
 			return true;
 		}
 		return false;
@@ -151,7 +150,7 @@ public class DualSidedSearch {
 	
 	private boolean cannotDeliverFromNearbyGrid(double gridTime){
 		if((System.currentTimeMillis() + DateTimeHelper.toMilliSeconds(gridTime)) 
-				<= DateTimeHelper.toMilliSeconds(query.getDeliveryWindowLateBound())){
+				<= query.getDeliveryWindowLateBound()){
 			return true;
 		}
 		return false;
