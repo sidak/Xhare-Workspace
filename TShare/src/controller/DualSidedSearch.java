@@ -31,6 +31,7 @@ public class DualSidedSearch {
 		
 		List<TaxiIndex> candidateTaxis = new ArrayList<TaxiIndex>();
 		
+		// TODO: no point of this
 		Preprocessor preprocessor = new Preprocessor();
 		preprocessor.doPreprocessing();
 		
