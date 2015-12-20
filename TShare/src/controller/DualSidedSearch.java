@@ -30,7 +30,7 @@ public class DualSidedSearch {
 		
 		List<TaxiIndex> candidateTaxis = new ArrayList<TaxiIndex>();
 		
-		Preprocessor preprocessor = new Preprocessor();
+		GraphPreprocessor preprocessor = new GraphPreprocessor();
 		
 		int srcGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());
 		int destGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());

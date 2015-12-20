@@ -30,7 +30,7 @@ public class SingleSidedSearch {
 		
 		List<TaxiIndex> candidateTaxis = new ArrayList<TaxiIndex>();
 
-		Preprocessor preprocessor = new Preprocessor();
+		GraphPreprocessor preprocessor = new GraphPreprocessor();
 		int srcGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());
 		
 		List<TemporalIndex> temporalGridList = temporalGridIndex.get(srcGridIdx);
