@@ -9,7 +9,7 @@ import index.SpatialIndex;
 import index.TaxiIndex;
 import index.TemporalIndex;
 import model.Query;
-import preprocessor.GraphPreprocessor;
+import preprocessor.Preprocessor;
 import util.DateTimeHelper;
 import util.ListHelper;
 
@@ -31,7 +31,8 @@ public class DualSidedSearch {
 		
 		List<TaxiIndex> candidateTaxis = new ArrayList<TaxiIndex>();
 		
-		GraphPreprocessor preprocessor = new GraphPreprocessor();
+		Preprocessor preprocessor = new Preprocessor();
+		preprocessor.doPreprocessing();
 		
 		int srcGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());
 		int destGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());
