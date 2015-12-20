@@ -7,6 +7,7 @@ import java.util.Map;
 import index.TaxiIndex;
 import index.TemporalIndex;
 import model.Query;
+import preprocessor.GraphPreprocessor;
 import util.DateTimeHelper;
 
 public class SingleSidedSearch {

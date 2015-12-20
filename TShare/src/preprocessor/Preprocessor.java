@@ -1,62 +1,134 @@
-package controller;
+package preprocessor;
 
-import java.beans.PropertyChangeListenerProxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 import index.SpatialIndex;
 import index.TemporalIndex;
-import model.DirectedGraph;
 import model.Grid;
 import model.Point;
-import util.DoubleHelper;
 import util.DistanceHelper;
+import util.DoubleHelper;
 
-public class GraphPreprocessor extends Preprocessor{
-	
-	private List< List<Double> > gridDistMatrix;
-	private List< List<Double> > gridTimeMatrix;
-	private DirectedGraph graph;
-	private List<Grid> grids;
-	private Scanner scan;
-	private double minMapLat, minMapLng;
-	private double maxMapLat, maxMapLng;
-	private double gridLength, gridBreadth;
-	private int numGrids;
-	private int numGridsX, numGridsY;
-	private List<Double> gridLngs, gridLats;
-	private Map<Integer, List<Point> > gridIdxMap;
-	private Map<Integer, List<SpatialIndex>> spatialGridIndex;
-	private Map<Integer, List<TemporalIndex>> temporalGridIndex;
-	
-	public GraphPreprocessor(){
-		doPreprocessing();
+public class Preprocessor {
+	protected List< List<Double> > gridDistMatrix;
+	protected List< List<Double> > gridTimeMatrix;
+	protected List<Grid> grids;
+	protected double minMapLat, minMapLng;
+	protected double maxMapLat, maxMapLng;
+	protected double gridLength, gridBreadth;
+	protected int numGrids;
+	protected int numGridsX, numGridsY;
+	protected List<Double> gridLngs, gridLats;
+	protected Map<Integer, List<SpatialIndex>> spatialGridIndex;
+	protected Map<Integer, List<TemporalIndex>> temporalGridIndex;
+	protected Scanner scan;
+
+	public List<List<Double>> getGridDistMatrix() {
+		return gridDistMatrix;
 	}
-	public void doPreprocessing() {
-		graph = new DirectedGraph();
+
+	public List<List<Double>> getGridTimeMatrix() {
+		return gridTimeMatrix;
+	}
+
+	public List<Double> getGridLngs() {
+		return gridLngs;
+	}
+
+	public List<Double> getGridLats() {
+		return gridLats;
+	}
+
+	public Map<Integer, List<SpatialIndex>> getSpatialGridIndex() {
+		return spatialGridIndex;
+	}
+
+	public Map<Integer, List<TemporalIndex>> getTemporalGridIndex() {
+		return temporalGridIndex;
+	}
+	
+	public Preprocessor(){
 		grids = new ArrayList<Grid>();
 		gridDistMatrix = new ArrayList< List<Double> >();
 		gridTimeMatrix = new ArrayList< List<Double> >();
 		scan = new Scanner(System.in);
+	}
+	
+	public void doPreprocessing() {
 		System.out.println("Starting Work");
 		takeInput();
 		makeGrids();
 		setAllGridCenters();
 		calcGridDistAndTimeMatrix();
 		computeSpatioTemporalGridIndex();
-		saveToFile();
 		System.out.println("Done Everything");
 	}
+	
+	public int calcGridIndex(Point pt){
+		double lat = pt.getLat();
+		double lng = pt.getLng();
+		int idxLat = Collections.binarySearch(gridLats, lat);
+		int idxLng = Collections.binarySearch(gridLngs, lng);
+		
+		idxLat = (-1*(idxLat+1)) -1;
+		idxLng = (-1*(idxLng +1))-1;
+		//System.out.println("idxLat is : " + idxLat + " idxLng is : " +idxLng);
+		return (idxLat*numGridsX + idxLng);
+	}
+	
+	public void printGridDistAndTimeMatrix() {
+		System.out.println("The grid distance matrix is as follows\n");
+		printGridMatrix(gridDistMatrix);
+		System.out.println("The grid time matrix is as follows\n");
+		printGridMatrix(gridTimeMatrix);
+	}
+	
+	protected void takeInput() {
+		takeMapInput();
+		takeGridSizeInput();
+	}
 
-	private void saveToFile() {
-		// TODO Auto-generated method stub
+	protected void setAllGridCenters() {
+		
+		for(int i = 0; i<numGrids; i++){
+			grids.get(i).setCenter(grids.get(i).getGeoCenter());
+		}
 		
 	}
+	
+	protected void calcGridDistAndTimeMatrix() {
+		for(int i=0; i<numGrids; i++){
+			Grid srcGrid = grids.get(i);
+			List<Double> distances = new ArrayList<Double>(); 
+			List<Double> times = new ArrayList<Double>();
+			for(int j=0; j<numGrids; j++){
+				
+				if(i==j){
+					distances.add(0.0);
+					times.add(0.0);
+				}
+				else{
+					Grid destGrid = grids.get(j);
+					double [] distTimePair = new double[2];
+					distTimePair[0] = DistanceHelper.distBetween(srcGrid.getCenter(), destGrid.getCenter());
+					distTimePair[1] = DistanceHelper.timeBetween(srcGrid.getCenter(), destGrid.getCenter());
+					distances.add(distTimePair[0]);
+					times.add(distTimePair[1]);
+				}
+			}
+			gridDistMatrix.add(distances);
+			gridTimeMatrix.add(times);
+		}
+		
+		printGridDistAndTimeMatrix();
+	}
+
+
 
 	private void computeSpatioTemporalGridIndex() {
 		computeSpatialGridIndex();
@@ -141,107 +213,6 @@ public class GraphPreprocessor extends Preprocessor{
 			}
 			System.out.print("\n");
 		}
-	}
-
-	private void takeInput() {
-		takeGraphInput();
-		takeMapInput();
-		takeGridSizeInput();
-	}
-
-	private void setAllGridCenters() {
-		
-		mapPointsToGrids();
-		for(int i = 0; i<numGrids; i++){
-			Point roadNetworkCenter = findNearestPointToGridCenter(i);
-			System.out.println("Grid center for grid " + i + " is " + roadNetworkCenter.toString());
-			grids.get(i).setCenter(roadNetworkCenter);
-		}
-		
-	}
-
-	private Point findNearestPointToGridCenter(int gridIdx) {
-		if(!gridIdxMap.containsKey(gridIdx)){
-			return grids.get(gridIdx).getGeoCenter();
-		}
-		List<Point> ptList = gridIdxMap.get(gridIdx);
-		Grid grid = grids.get(gridIdx);
-		double minDist = Double.MAX_VALUE;
-		
-		Point geoCenter = grid.getGeoCenter();
-		Point roadNetworkCenter = null;
-	
-		for(int j = 0; j<ptList.size(); j++){
-			double ptDist = DistanceHelper.distBetween(geoCenter, ptList.get(j));
-			if(Double.compare(ptDist, minDist) <= 0 ){
-				minDist = ptDist;
-				roadNetworkCenter = ptList.get(j);
-			}
-		}
-		return roadNetworkCenter;
-	}
-
-	private void mapPointsToGrids() {
-		gridIdxMap = new HashMap<Integer, List<Point> >();
-		
-		Iterator<Point> vertexIterator = graph.getVertices().iterator();
-		
-		while(vertexIterator.hasNext()){
-			Point pt = vertexIterator.next();
-			//System.out.println("Mapping the pt: " + pt.toString());
-			int idx = calcGridIndex(pt);
-			//System.out.println("Grid idx in which it lies " + idx);
-			if(!gridIdxMap.containsKey(idx)){
-				ArrayList<Point> ptList = new ArrayList<Point>();
-				ptList.add(pt);
-				gridIdxMap.put(idx, ptList);
-			}
-			gridIdxMap.get(idx).add(pt);
-		}
-	}
-	
-	public int calcGridIndex(Point pt){
-		double lat = pt.getLat();
-		double lng = pt.getLng();
-		int idxLat = Collections.binarySearch(gridLats, lat);
-		int idxLng = Collections.binarySearch(gridLngs, lng);
-		
-		idxLat = (-1*(idxLat+1)) -1;
-		idxLng = (-1*(idxLng +1))-1;
-		//System.out.println("idxLat is : " + idxLat + " idxLng is : " +idxLng);
-		return (idxLat*numGridsX + idxLng);
-	}
-
-	private void calcGridDistAndTimeMatrix() {
-		for(int i=0; i<numGrids; i++){
-			Grid srcGrid = grids.get(i);
-			List<Double> distances = new ArrayList<Double>(); 
-			List<Double> times = new ArrayList<Double>();
-			for(int j=0; j<numGrids; j++){
-				
-				if(i==j){
-					distances.add(0.0);
-					times.add(0.0);
-				}
-				else{
-					Grid destGrid = grids.get(j);
-					double [] distTimePair = graph.calcEdgeDistAndTime(srcGrid.getCenter(), destGrid.getCenter());
-					distances.add(distTimePair[0]);
-					times.add(distTimePair[1]);
-				}
-			}
-			gridDistMatrix.add(distances);
-			gridTimeMatrix.add(times);
-		}
-		
-		printGridDistAndTimeMatrix();
-	}
-
-	private void printGridDistAndTimeMatrix() {
-		System.out.println("The grid distance matrix is as follows\n");
-		printGridMatrix(gridDistMatrix);
-		System.out.println("The grid time matrix is as follows\n");
-		printGridMatrix(gridTimeMatrix);
 	}
 	
 	private void makeGrids() {
@@ -330,30 +301,5 @@ public class GraphPreprocessor extends Preprocessor{
 		minMapLat = scan.nextDouble();
 		minMapLng = scan.nextDouble();
 	}
-	// TODO: take care of units of speed limit
-	private void takeGraphInput() {
-		double lat1, lng1, lat2, lng2, distInKiloMeters, sl;
-		
-		lat1 = scan.nextDouble();
-		lng1 = scan.nextDouble();
-		lat2 = scan.nextDouble();
-		lng2 = scan.nextDouble();
-		distInKiloMeters = scan.nextDouble();
-		sl = scan.nextDouble();
-		
-		while(isMoreInput(distInKiloMeters)){
-			graph.addEdge(lat1, lng1, lat2, lng2, distInKiloMeters, sl);
-			lat1 = scan.nextDouble();
-			lng1 = scan.nextDouble();
-			lat2 = scan.nextDouble();
-			lng2 = scan.nextDouble();
-			distInKiloMeters = scan.nextDouble();
-			sl = scan.nextDouble();
-		}
-		
-	}
 	
-	private boolean isMoreInput(double dist){
-		return Double.compare(dist, -1.0) == 1 ;
-	}
 }

@@ -9,6 +9,7 @@ import index.SpatialIndex;
 import index.TaxiIndex;
 import index.TemporalIndex;
 import model.Query;
+import preprocessor.GraphPreprocessor;
 import util.DateTimeHelper;
 import util.ListHelper;
 

@@ -44,6 +44,15 @@ public class DistanceHelper {
 		double dist = Math.abs((EARTH_RADIUS_IN_MILES*MILE_TO_KM) * c);
 		return dist;
 	}
+	
+	public static double timeBetween(Point src, Point dest, double speedLimitInKmPerHr){
+		return distBetween(src, dest)/speedLimitInKmPerHr ;
+	}
+	
+	public static double timeBetween(Point src, Point dest){
+		return distBetween(src, dest)/SPEED_LIMIT_KM_PER_HR;
+	}
+	
 	public static Point findPointAtDistance(Point src, double dist, int axis){
 		double destLat=0.0, destLng=0.0;
 		double srcLat, srcLng;
