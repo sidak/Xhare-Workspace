@@ -12,6 +12,7 @@ import index.TemporalIndex;
 import model.Grid;
 import model.Point;
 import model.Query;
+import model.Schedule;
 import model.TaxiStatus;
 import preprocessor.Preprocessor;
 import util.DistanceHelper;
@@ -26,9 +27,6 @@ public class API {
 	private static Map<Integer, List<SpatialIndex>> spatialGridIndex;
 	private static Map<Integer, List<TemporalIndex>> temporalGridIndex;
 	private static Map<Integer, List<TaxiIndex>> taxiGridIndex;
-	private static List< List<Double> > gridDistMatrix;
-	private static List< List<Double> > gridTimeMatrix;
-	private static List<Grid> grids;
 	
 	private static Map<Integer, TaxiStatus> taxis;
 	
@@ -73,23 +71,7 @@ public class API {
 	public static List<Integer> search(Point src, Point dest, long startTimeInMillis, long endTimeInMillis){
 		List<Integer> selectedTaxiIds = new ArrayList<Integer>();
 		
-		Query query = new Query();
-		query.setId(queryId);
-		queryId ++;
-		
-		query.setPickupPoint(src);
-		query.setDeliveryPoint(dest);
-		query.setTimestamp(System.currentTimeMillis());
-		
-		Long[] pickupWindow = new Long[2];
-		pickupWindow[0] = startTimeInMillis;
-		pickupWindow[1] = startTimeInMillis + WINDOW_LENGTH;
-		query.setPickupWindow(pickupWindow);
-		
-		Long[] deliveryWindow = new Long[2];
-		deliveryWindow[0] = endTimeInMillis;
-		deliveryWindow[1] = endTimeInMillis + WINDOW_LENGTH;
-		query.setDeliveryWindow(deliveryWindow);
+		Query query = makeQuery(src, dest, startTimeInMillis, endTimeInMillis);
 				
 		DualSidedSearch dualSidedSearch = new DualSidedSearch();
 		dualSidedSearch.setQuery(query);
@@ -108,6 +90,7 @@ public class API {
 			taxiStatus = taxis.get(id);
 			
 			queryScheduler = new QuerySchedulerForTaxi(query, taxiStatus);
+			queryScheduler.scheduleQuery();
 			double distInc = queryScheduler.getMinDistanceIncrease();
 			if(DoubleHelper.lessThan(distInc, minDistInc)){
 				minDistInc = distInc;
@@ -121,18 +104,64 @@ public class API {
 		return selectedTaxiIds;
 	}
 	
-	public static void book(int taxiId, Point src, Point dest){
-	
+	public static void book(int id, Query query){
+		QuerySchedulerForTaxi queryScheduler = new QuerySchedulerForTaxi(query, taxis.get(id));
+		List<Integer> insertionPoints = queryScheduler.scheduleQuery();
+		Schedule newSchedule = queryScheduler.getBestSchedule();
+		taxis.get(id).setSchedule(newSchedule);
+		
+		int srcGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());
+		int destGridIdx = preprocessor.calcGridIndex(query.getDeliveryPoint());
+		
+		long srcArrivalTime = newSchedule.getScheduleTimes().get(insertionPoints.get(0));
+		long destArrivalTime = newSchedule.getScheduleTimes().get(insertionPoints.get(1));
+		
+		TaxiIndex srcTaxiIndex = new TaxiIndex(id, srcArrivalTime);
+		TaxiIndex destTaxiIndex = new TaxiIndex(id, destArrivalTime);
+		
+		
+		if(!taxiGridIndex.containsKey(srcGridIdx)){
+			List<TaxiIndex> taxiIndices = new ArrayList<TaxiIndex>();
+			taxiGridIndex.put(srcGridIdx, taxiIndices);
+		}
+		taxiGridIndex.get(srcGridIdx).add(srcTaxiIndex);
+		
+		if(!taxiGridIndex.containsKey(destGridIdx)){
+			List<TaxiIndex> taxiIndices = new ArrayList<TaxiIndex>();
+			taxiGridIndex.put(destGridIdx, taxiIndices);
+		}
+		taxiGridIndex.get(destGridIdx).add(destTaxiIndex);
+		
+		Collections.sort(taxiGridIndex.get(srcGridIdx));
+		Collections.sort(taxiGridIndex.get(destGridIdx));
+		
+	}
+
+	private static Query makeQuery(Point src, Point dest, long startTimeInMillis, long endTimeInMillis) {
+		Query query = new Query();
+		query.setId(queryId);
+		queryId ++;
+		
+		query.setPickupPoint(src);
+		query.setDeliveryPoint(dest);
+		query.setTimestamp(System.currentTimeMillis());
+		
+		Long[] pickupWindow = new Long[2];
+		pickupWindow[0] = startTimeInMillis;
+		pickupWindow[1] = startTimeInMillis + WINDOW_LENGTH;
+		query.setPickupWindow(pickupWindow);
+		
+		Long[] deliveryWindow = new Long[2];
+		deliveryWindow[0] = endTimeInMillis;
+		deliveryWindow[1] = endTimeInMillis + WINDOW_LENGTH;
+		query.setDeliveryWindow(deliveryWindow);
+		return query;
 	}
 	
 	public static void main(String[] args) {
 		
 		preprocessor = new Preprocessor();
 		preprocessor.doPreprocessing();
-		
-		grids = preprocessor.getGrids();
-		gridDistMatrix = preprocessor.getGridDistMatrix();
-		gridTimeMatrix = preprocessor.getGridTimeMatrix();
 		
 		temporalGridIndex = preprocessor.getTemporalGridIndex();
 		spatialGridIndex = preprocessor.getSpatialGridIndex();
