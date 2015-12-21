@@ -96,6 +96,7 @@ public class DistanceHelper {
 				);
 	}
 	
+	// This methods can be implemented using tripgo api
 	public static double estimatedDynamicDistance(Point src, Point dest){
 		return distBetween(src, dest);
 	}

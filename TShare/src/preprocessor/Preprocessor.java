@@ -52,6 +52,10 @@ public class Preprocessor {
 		return temporalGridIndex;
 	}
 	
+	public List<Grid> getGrids() {
+		return grids;
+	}
+
 	public Preprocessor(){
 		grids = new ArrayList<Grid>();
 		gridDistMatrix = new ArrayList< List<Double> >();

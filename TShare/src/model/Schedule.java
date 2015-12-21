@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Schedule {
 	private List<Point> scheduleLocations;
-	private List<Long> scheduleTimes;
+	private List<Long> scheduleTimes; // estimated arrival time
 	private List<Long> scheduleSlackTimes;
 	
 	public Schedule(List<Point> scheduleLocations, List<Long> scheduleTimes, 

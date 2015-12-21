@@ -1,5 +1,11 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import util.DateTimeHelper;
+import util.DistanceHelper;
+
 public class TaxiStatus {
 	
 	private int id;
@@ -12,7 +18,25 @@ public class TaxiStatus {
 	public TaxiStatus(){
 		
 	}
-	
+	public TaxiStatus(int id, Point src, Point dest, long timestamp, int capacity){
+		this.id = id;
+		this.timestamp = timestamp;
+		this.location = src;
+		this.numBookedPassengers = 0;
+		this.capacity = capacity;
+		
+		long estimatedArrivalTime = DistanceHelper.estimatedDynamicTimeInMilliSeconds(src, dest);
+		long slackTime = DateTimeHelper.toMilliSeconds(6.0);
+		List<Point> locations = new ArrayList<Point>();
+		locations.add(dest);
+		List<Long> arrivalTimes = new ArrayList<Long>();
+		arrivalTimes.add(estimatedArrivalTime);
+		List<Long> slackTimes = new ArrayList<Long>();
+		slackTimes.add(slackTime);
+		
+		this.schedule = new Schedule(locations, arrivalTimes, slackTimes);
+		
+	}
 	public int getId() {
 		return id;
 	}

@@ -27,14 +27,10 @@ public class DualSidedSearch {
 	public List<TaxiIndex> searchCandidateTaxis(
 			Map<Integer, List<SpatialIndex>> spatialGridIndex, 
 			Map<Integer, List<TemporalIndex>> temporalGridIndex, 
-			Map<Integer, List<TaxiIndex>> taxiGridIndex){
+			Map<Integer, List<TaxiIndex>> taxiGridIndex, Preprocessor preprocessor){
 		
 		List<TaxiIndex> candidateTaxis = new ArrayList<TaxiIndex>();
-		
-		// TODO: no point of this
-		Preprocessor preprocessor = new Preprocessor();
-		preprocessor.doPreprocessing();
-		
+			
 		int srcGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());
 		int destGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());
 		
