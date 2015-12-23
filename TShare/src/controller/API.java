@@ -9,12 +9,12 @@ import java.util.Map;
 import index.SpatialIndex;
 import index.TaxiIndex;
 import index.TemporalIndex;
-import model.Grid;
 import model.Point;
 import model.Query;
 import model.Schedule;
 import model.TaxiStatus;
 import preprocessor.Preprocessor;
+import util.DateTimeHelper;
 import util.DistanceHelper;
 import util.DoubleHelper;
 
@@ -39,9 +39,10 @@ public class API {
 		TaxiStatus taxiStatus = new TaxiStatus(taxiId, src, dest, startTime, capacity);
 		taxis.put(taxiId, taxiStatus);
 		taxiId ++;
-		
 		int srcGridIdx = preprocessor.calcGridIndex(src);
+		System.out.print("\n");
 		int destGridIdx = preprocessor.calcGridIndex(dest);
+		System.out.print("\n");
 		
 		//TODO: instead of list, use a set to order it by timestamp
 	
@@ -49,18 +50,18 @@ public class API {
 			List<TaxiIndex> taxiIndices = new ArrayList<TaxiIndex>();
 			taxiGridIndex.put(srcGridIdx, taxiIndices);
 		}
-		taxiGridIndex.get(srcGridIdx).add(new TaxiIndex(srcGridIdx, startTime));
-		
+		taxiGridIndex.get(srcGridIdx).add(new TaxiIndex((taxiId-1), startTime));
+		System.out.println("Inserted taxi in grid idx = " + srcGridIdx);
 		if(!taxiGridIndex.containsKey(destGridIdx)){
 			List<TaxiIndex> taxiIndices = new ArrayList<TaxiIndex>();
 			taxiGridIndex.put(destGridIdx, taxiIndices);
 		}
 		taxiGridIndex.get(destGridIdx)
-			.add(new TaxiIndex(destGridIdx, 
-					DistanceHelper.estimatedDynamicTimeInMilliSeconds(src, dest)
+			.add(new TaxiIndex((taxiId-1), 
+					startTime + DistanceHelper.estimatedDynamicTimeInMilliSeconds(src, dest)
 					)
 				);
-		
+		System.out.println("Inserted taxi in grid idx = " + destGridIdx+"\n");
 		Collections.sort(taxiGridIndex.get(srcGridIdx));
 		Collections.sort(taxiGridIndex.get(destGridIdx));
 		
@@ -78,7 +79,7 @@ public class API {
 		
 		List<TaxiIndex> candidateTaxis = dualSidedSearch.searchCandidateTaxis(
 				spatialGridIndex, temporalGridIndex, taxiGridIndex, preprocessor);
-		
+		System.out.println("\nCandidate taxi id is " + candidateTaxis.get(0).getTaxiId());
 		QuerySchedulerForTaxi queryScheduler;
 		double minDistInc = Double.MAX_VALUE;
 		int bestTaxiId = -1;
@@ -90,7 +91,6 @@ public class API {
 			taxiStatus = taxis.get(id);
 			
 			queryScheduler = new QuerySchedulerForTaxi(query, taxiStatus);
-			queryScheduler.scheduleQuery();
 			double distInc = queryScheduler.getMinDistanceIncrease();
 			if(DoubleHelper.lessThan(distInc, minDistInc)){
 				minDistInc = distInc;
@@ -98,8 +98,9 @@ public class API {
 			}
 			queryScheduler = null;
 		}
-		
-		if(bestTaxiId !=-1) selectedTaxiIds.add(bestTaxiId);
+		System.out.println("\nThus min increase in distance over all possiblities is "+ minDistInc);
+		//if(bestTaxiId !=-1) 
+		selectedTaxiIds.add(bestTaxiId);
 		
 		return selectedTaxiIds;
 	}
@@ -144,7 +145,7 @@ public class API {
 		
 		query.setPickupPoint(src);
 		query.setDeliveryPoint(dest);
-		query.setTimestamp(System.currentTimeMillis());
+		query.setTimestamp(DateTimeHelper.getCurrTime());
 		
 		Long[] pickupWindow = new Long[2];
 		pickupWindow[0] = startTimeInMillis;
@@ -167,6 +168,16 @@ public class API {
 		spatialGridIndex = preprocessor.getSpatialGridIndex();
 		taxiGridIndex = new HashMap<Integer, List<TaxiIndex>>();
 		taxis = new HashMap<Integer, TaxiStatus>();
+		long currTime = System.currentTimeMillis();
+		System.out.println("\nCurrTime is " + currTime+"\n");
+		DateTimeHelper.setCurrTime(currTime);
+		//System.out.println("Taxi Grid Index size before is "+ taxiGridIndex.size());
+
+		int id = supply(new Point(0.05, 0.05), new Point(0.25, 0.25), currTime);
+		System.out.println("Taxi id which got supplied is "+id);
+		//System.out.println("Taxi Grid Index size after is "+ taxiGridIndex.size());
+		List<Integer> taxiIds = search(new Point(0.15, 0.05), new Point(0.15, 0.25), (currTime + 10*60*1000), (currTime + 30*60*1000));
+		System.out.println("\nTaxi selected for ridesharing " + taxiIds.get(0));
 		
 	}
 }
