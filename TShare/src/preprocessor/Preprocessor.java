@@ -64,13 +64,13 @@ public class Preprocessor {
 	}
 	
 	public void doPreprocessing() {
-		System.out.println("Starting Work");
+		System.out.println("Starting Preprocessing");
 		takeInput();
 		makeGrids();
 		setAllGridCenters();
 		calcGridDistAndTimeMatrix();
 		computeSpatioTemporalGridIndex();
-		System.out.println("Done Everything");
+		System.out.println("\nDone Preprocessing");
 	}
 	
 	public int calcGridIndex(Point pt){
@@ -81,7 +81,7 @@ public class Preprocessor {
 		
 		idxLat = (-1*(idxLat+1)) -1;
 		idxLng = (-1*(idxLng +1))-1;
-		//System.out.println("idxLat is : " + idxLat + " idxLng is : " +idxLng);
+		System.out.println("idxLat is : " + idxLat + " idxLng is : " +idxLng);
 		return (idxLat*numGridsX + idxLng);
 	}
 	
@@ -164,7 +164,7 @@ public class Preprocessor {
 			temporalGridIndex.put(i, temporalIndex);
 			
 			if(temporalIndex.size()>0){
-				System.out.println("Printing temporalIndex for Grid " +i);
+				System.out.println("\nPrinting temporalIndex for Grid " +i);
 				for(int j=0; j<temporalIndex.size(); j++){
 					System.out.print(temporalIndex.get(j).getGridIdx() + " ");
 				}
@@ -199,7 +199,7 @@ public class Preprocessor {
 			spatialGridIndex.put(i, spatialIndex);
 			
 			if(spatialIndex.size()>0){
-				System.out.println("Printing spatialIndex for Grid " +i);
+				System.out.println("\nPrinting spatialIndex for Grid " +i);
 				for(int j=0; j<spatialIndex.size(); j++){
 					System.out.print(spatialIndex.get(j).getGridIdx() + " ");
 				}
@@ -263,6 +263,7 @@ public class Preprocessor {
 			
 			gridLats.add(startLat);
 		}
+		
 		System.out.println("The grid boundary latitudes are");
 		for(int i=0; i<gridLats.size(); i++){
 			System.out.print(gridLats.get(i) +" ");
