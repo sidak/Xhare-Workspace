@@ -4,11 +4,13 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class DateTimeHelper {
-
+	
+	private static long currTime;
+	
 	public static long toMilliSeconds(double gridTimeInHours) {
+		gridTimeInHours *= 3600;
+		gridTimeInHours *= 1000;
 		long milliSeconds = (long)gridTimeInHours;
-		milliSeconds *= 3600;
-		milliSeconds *= 1000;
 		return milliSeconds;
 	}
 
@@ -27,6 +29,14 @@ public class DateTimeHelper {
 
 	public static long toSeconds(Date pickupWindowLateBound) {
 		return (toMilliSeconds(pickupWindowLateBound)/1000);
+	}
+
+	public static long getCurrTime() {
+		return currTime;
+	}
+
+	public static void setCurrTime(long currTime) {
+		DateTimeHelper.currTime = currTime;
 	}
 
 
