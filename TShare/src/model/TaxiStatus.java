@@ -30,7 +30,7 @@ public class TaxiStatus {
 		List<Point> locations = new ArrayList<Point>();
 		locations.add(dest);
 		List<Long> arrivalTimes = new ArrayList<Long>();
-		arrivalTimes.add(estimatedArrivalTime);
+		arrivalTimes.add(estimatedArrivalTime + timestamp);
 		List<Long> slackTimes = new ArrayList<Long>();
 		slackTimes.add(slackTime);
 		
