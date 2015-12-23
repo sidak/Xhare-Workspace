@@ -10,7 +10,7 @@ public class DistanceHelper {
 	private static final double EARTH_RADIUS_IN_MILES=3958.75;
 	private static final double MILE_TO_KM=1.609344;
 	private static final double EARTH_RADIUS_IN_KM = EARTH_RADIUS_IN_MILES * MILE_TO_KM;
-	private static final double SPEED_LIMIT_KM_PER_HR = 10;
+	private static final double SPEED_LIMIT_KM_PER_HR = 60;
 
 	/*
 	 * @return return distance between two geo points in kilometers
@@ -29,6 +29,7 @@ public class DistanceHelper {
 	}
 	
 	public static double distBetween(Point src, Point dest) {
+		if(src == null || dest == null) return 0;
 		double lat1, lng1, lat2, lng2;
 		lat1 = src.getLat();
 		lng1 = src.getLng();
