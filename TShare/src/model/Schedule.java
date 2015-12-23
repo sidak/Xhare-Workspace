@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Schedule {
@@ -12,6 +13,12 @@ public class Schedule {
 		this.scheduleLocations = scheduleLocations;
 		this.scheduleTimes = scheduleTimes;
 		this.scheduleSlackTimes = scheduleSlackTimes;
+	}
+	public Schedule(){
+		this.scheduleLocations = new ArrayList<Point>();
+		this.scheduleSlackTimes = new ArrayList<Long>();
+		this.scheduleTimes = new ArrayList<Long>();
+		
 	}
 	public List<Point> getScheduleLocations() {
 		return scheduleLocations;
@@ -30,6 +37,20 @@ public class Schedule {
 	}
 	public void setScheduleSlackTimes(List<Long> scheduleSlackTimes) {
 		this.scheduleSlackTimes = scheduleSlackTimes;
+	}
+	public void copyFrom(Schedule schedule) {
+		
+		List<Long> slackTimes = schedule.getScheduleSlackTimes();
+		List<Long> arrivalTimes = schedule.getScheduleTimes();
+		List<Point> locations = schedule.getScheduleLocations();
+		
+		for(int i=0; i<locations.size(); i++){
+			this.scheduleLocations.add(locations.get(i));
+			this.scheduleSlackTimes.add(slackTimes.get(i));
+			this.scheduleTimes.add(arrivalTimes.get(i));
+		}
+		
+		
 	}
 	
 }
