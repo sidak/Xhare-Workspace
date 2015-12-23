@@ -10,6 +10,12 @@ import index.TaxiIndex;
 public class ListHelper {
 
 	public static List<TaxiIndex> findListIntersection(List<TaxiIndex> srcTaxis, List<TaxiIndex> destTaxis) {
+		if(srcTaxis == null || destTaxis == null){
+			return null;
+		}
+		if(srcTaxis.size()==0 || destTaxis.size()==0) return null;
+		System.out.println("srcTaxis size is "+ srcTaxis.size());
+		System.out.println("destTaxis size is "+destTaxis.size());
 		List<TaxiIndex> intersectionList = new ArrayList<TaxiIndex>();
 		int srcIdx = 0;
 		int destIdx = 0;
