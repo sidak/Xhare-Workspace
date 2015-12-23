@@ -32,10 +32,14 @@ public class DualSidedSearch {
 		List<TaxiIndex> candidateTaxis = new ArrayList<TaxiIndex>();
 			
 		int srcGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());
-		int destGridIdx = preprocessor.calcGridIndex(query.getPickupPoint());
-		
+		System.out.println("Src grid is " +srcGridIdx);
+		int destGridIdx = preprocessor.calcGridIndex(query.getDeliveryPoint());
+		System.out.println("Dest grid is " +destGridIdx);
+
 		List<TemporalIndex> srcTemporalGridList = temporalGridIndex.get(srcGridIdx);
+		System.out.println("Src Temporal Grid List size is "+srcTemporalGridList.size());
 		List<TemporalIndex> destTemporalGridList = temporalGridIndex.get(destGridIdx);
+		System.out.println("Dest Temporal Grid List size is "+destTemporalGridList.size());
 		
 		Map<Integer, Boolean> isPickableGridNearSrc = new HashMap<Integer, Boolean>();
 		for(int i =0; i<srcTemporalGridList.size(); i++){
@@ -43,19 +47,22 @@ public class DualSidedSearch {
 				break;
 			}
 			else{
+				System.out.println("Is pickable grid near src, idx of which is " + srcTemporalGridList.get(i).getGridIdx());
 				isPickableGridNearSrc.put(srcTemporalGridList.get(i).getGridIdx(), true);
 			}
 		}
-		
+		System.out.println("Size of isPickableGridNearSrc is "+ isPickableGridNearSrc.size());
 		Map<Integer, Boolean> isDeliverableGridNearDest = new HashMap<Integer, Boolean>();
 		for(int i=0; i<destTemporalGridList.size(); i++){
 			if(cannotDeliverFromNearbyGrid(destTemporalGridList.get(i).getGridTime())){
 				break;
 			}
 			else{
+				System.out.println("Is deliverable grid near src, idx of which is " + destTemporalGridList.get(i).getGridIdx());
 				isDeliverableGridNearDest.put(destTemporalGridList.get(i).getGridIdx(), true);
 			}
 		}
+		System.out.println("Size of isDeliverableGridNearDest is "+ isDeliverableGridNearDest.size());
 		
 		List<Integer> pickableGridsOrderedSpatially = new ArrayList<Integer>();
 		List<Integer> deliverableGridsOrderedSpatially = new ArrayList<Integer>();
@@ -73,6 +80,8 @@ public class DualSidedSearch {
 			}
 		}
 		
+		System.out.println("Size of pickableGridsOrderedSpatially is "+ pickableGridsOrderedSpatially.size());
+		System.out.println(pickableGridsOrderedSpatially.toString());
 		for(int i=0; i<destSpatialGridList.size(); i++){
 			int gridIdx = destSpatialGridList.get(i).getGridIdx();
 			if(!isDeliverableGridNearDest.containsKey(gridIdx)){
@@ -82,9 +91,12 @@ public class DualSidedSearch {
 				deliverableGridsOrderedSpatially.add(gridIdx);
 			}
 		}
-		
-		List<TaxiIndex> srcTaxis = filterNotPickableTaxis(taxiGridIndex.get(srcGridIdx), 0);
-		List<TaxiIndex> destTaxis = filterNotPickableTaxis(taxiGridIndex.get(destGridIdx), 0);
+		System.out.println("Size of deliverableGridsOrderedSpatially is "+ deliverableGridsOrderedSpatially.size());
+		System.out.println(deliverableGridsOrderedSpatially.toString());
+
+		List<TaxiIndex> srcTaxis = new ArrayList<TaxiIndex>(), destTaxis = new ArrayList<TaxiIndex>();
+		if(taxiGridIndex.containsKey(srcGridIdx)) srcTaxis = filterNotPickableTaxis(taxiGridIndex.get(srcGridIdx), 0);
+		if(taxiGridIndex.containsKey(destGridIdx)) destTaxis = filterNotDeliverableTaxis(taxiGridIndex.get(destGridIdx), 0);
 		
 		int pickableGridsSpatiallySize = pickableGridsOrderedSpatially.size();
 		int deliverableGridsSpatiallySize = deliverableGridsOrderedSpatially.size();
@@ -96,7 +108,7 @@ public class DualSidedSearch {
 		
 		while(candidateTaxis.size() == 0){
 			
-			if(taxiIntersectionList.size()>0){
+			if(taxiIntersectionList!=null && taxiIntersectionList.size()>0){
 				candidateTaxis = taxiIntersectionList;
 				break;
 			}
@@ -105,11 +117,21 @@ public class DualSidedSearch {
 			}
 			else{
 				if(pickableGridIdx < pickableGridsSpatiallySize){
-					srcTaxis.addAll(filterNotPickableTaxis(taxiGridIndex.get(pickableGridsOrderedSpatially.get(pickableGridIdx)), temporalGridIndex.get(pickableGridIdx).get(srcGridIdx).getGridTime()));
+					System.out.println("Index of grid near src: " +pickableGridsOrderedSpatially.get(pickableGridIdx));
+					if(taxiGridIndex.containsKey(pickableGridsOrderedSpatially.get(pickableGridIdx))){
+						//srcTaxis.addAll(filterNotPickableTaxis(taxiGridIndex.get(pickableGridsOrderedSpatially.get(pickableGridIdx)), temporalGridIndex.get(pickableGridsOrderedSpatially.get(pickableGridIdx)).get(srcGridIdx).getGridTime()));
+						srcTaxis.addAll(taxiGridIndex.get(pickableGridsOrderedSpatially.get(pickableGridIdx)));
+						System.out.println("\nNumber of taxis feasible near src "+ srcTaxis.size() );
+					}
 					pickableGridIdx ++;
 				}
 				if(deliverableGridIdx < deliverableGridsSpatiallySize){
-					destTaxis.addAll(filterNotPickableTaxis(taxiGridIndex.get(deliverableGridsOrderedSpatially.get(deliverableGridIdx)), temporalGridIndex.get(deliverableGridIdx).get(destGridIdx).getGridTime()));
+					System.out.println("Index of grid near dest: " +deliverableGridsOrderedSpatially.get(deliverableGridIdx)); 
+					if(taxiGridIndex.containsKey(deliverableGridsOrderedSpatially.get(deliverableGridIdx))){
+						//destTaxis.addAll(filterNotDeliverableTaxis(taxiGridIndex.get(deliverableGridsOrderedSpatially.get(deliverableGridIdx)), temporalGridIndex.get(deliverableGridsOrderedSpatially.get(deliverableGridIdx)).get(destGridIdx).getGridTime()));
+						destTaxis.addAll(taxiGridIndex.get(deliverableGridsOrderedSpatially.get(deliverableGridIdx)));
+						System.out.println("\nNumber of taxis feasible near dest "+ destTaxis.size() +"\n" );
+					}
 					deliverableGridIdx ++;
 				}
 				taxiIntersectionList = ListHelper.findListIntersection(srcTaxis, destTaxis);
@@ -121,6 +143,9 @@ public class DualSidedSearch {
 		
 	}
 	private List<TaxiIndex> filterNotPickableTaxis(List<TaxiIndex> taxiList, double gridTime){
+		if(taxiList.isEmpty()){
+			return null;
+		}
 		List<TaxiIndex> filteredTaxiList = new ArrayList<TaxiIndex>();
 		
 		for(int i = 0; i<taxiList.size(); i++){
@@ -133,25 +158,70 @@ public class DualSidedSearch {
 		
 		return filteredTaxiList;
 	}
-	private boolean canPickupByTaxiFromNearbyGrid(long taxiTimestamp, double gridTime) {
+	private List<TaxiIndex> filterNotDeliverableTaxis(List<TaxiIndex> taxiList, double gridTime){
+		if(taxiList.isEmpty()){
+			return null;
+		}
+		List<TaxiIndex> filteredTaxiList = new ArrayList<TaxiIndex>();
+		
+		for(int i = 0; i<taxiList.size(); i++){
+			TaxiIndex taxiIndex = taxiList.get(i);
+			if(canDeliverTaxiToNearbyGrid(taxiIndex.getTimestamp(), gridTime)){
+				filteredTaxiList.add(taxiIndex);
+			}
+			else break;
+		}
+		
+		return filteredTaxiList;
+	}
+	private boolean canDeliverTaxiToNearbyGrid(Long taxiTimestamp, double gridTime) {
+		System.out.println("In canDeliverTaxiToNearbyGrid");
+		System.out.println("Curr time is "+ DateTimeHelper.getCurrTime());
+		System.out.println("Taxi Timestamp is  "+ taxiTimestamp);
+		System.out.println("time to reach grid is "+ DateTimeHelper.toMilliSeconds(gridTime));
+		System.out.println("Late bound of delivery window is "+query.getDeliveryWindowLateBound());
+		
+		
 		long taxiTimeStampMilliSeconds = taxiTimestamp;
-		long maxTaxiTimeStamp = System.currentTimeMillis() - DateTimeHelper.toMilliSeconds(gridTime);
-		return taxiTimeStampMilliSeconds <= maxTaxiTimeStamp;
+		long maxTaxiTimeStamp = query.getDeliveryWindowLateBound() - DateTimeHelper.toMilliSeconds(gridTime);
+		System.out.println("diff is " + maxTaxiTimeStamp );
+		return taxiTimeStampMilliSeconds <= maxTaxiTimeStamp && taxiTimestamp >= DateTimeHelper.getCurrTime();
+	}
+
+	private boolean canPickupByTaxiFromNearbyGrid(long taxiTimestamp, double gridTime) {
+		System.out.println("In canPickupTaxiFromNearbyGrid");
+		System.out.println("Curr time is "+ DateTimeHelper.getCurrTime());
+		System.out.println("Taxi Timestamp is  "+ taxiTimestamp);
+		System.out.println("time to reach grid is "+ DateTimeHelper.toMilliSeconds(gridTime));
+		System.out.println("Late bound of pickup window is "+query.getPickupWindowLateBound());
+		
+		long taxiTimeStampMilliSeconds = taxiTimestamp;
+		long maxTaxiTimeStamp = query.getPickupWindowLateBound() - DateTimeHelper.toMilliSeconds(gridTime);
+		System.out.println("diff is " + maxTaxiTimeStamp );
+		return taxiTimeStampMilliSeconds <= maxTaxiTimeStamp  && taxiTimestamp >= DateTimeHelper.getCurrTime();
 	}
 
 	private boolean cannotPickupFromNearbyGrid(double gridTime) {
-		if((System.currentTimeMillis() + DateTimeHelper.toMilliSeconds(gridTime)) 
+		System.out.println("Curr time is "+ DateTimeHelper.getCurrTime());
+		System.out.println("time to reach grid is "+ DateTimeHelper.toMilliSeconds(gridTime));
+		System.out.println("Late bound of pickup window is "+query.getPickupWindowLateBound());
+		System.out.println("");
+		if((DateTimeHelper.getCurrTime() + DateTimeHelper.toMilliSeconds(gridTime)) 
 				<= query.getPickupWindowLateBound()){
-			return true;
+			return false;
 		}
-		return false;
+		return true;
 	}
 	
 	private boolean cannotDeliverFromNearbyGrid(double gridTime){
-		if((System.currentTimeMillis() + DateTimeHelper.toMilliSeconds(gridTime)) 
+		System.out.println("Curr time is "+ DateTimeHelper.getCurrTime());
+		System.out.println("time to reach grid is "+ DateTimeHelper.toMilliSeconds(gridTime));
+		System.out.println("Late bound of delivery window is "+query.getDeliveryWindowLateBound());
+		System.out.println("");
+		if((DateTimeHelper.getCurrTime() + DateTimeHelper.toMilliSeconds(gridTime)) 
 				<= query.getDeliveryWindowLateBound()){
-			return true;
+			return false;
 		}
-		return false;
+		return true;
 	}
 }
