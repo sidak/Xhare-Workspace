@@ -92,7 +92,7 @@ public class Otp {
 		
 		String url = makeUrlString(srcLat, srcLng, destLat, destLng);
 		try {
-			JSONObject jsonResponse = JSONReader.readJsonFromUrl(url);
+			JSONObject jsonResponse = JSONReader.readJsonFromUrl(url, false);
 			if(!jsonResponse.has("plan")){
 				System.out.println("Distance: -1 and Time: -1, otp path not found");
 				return;

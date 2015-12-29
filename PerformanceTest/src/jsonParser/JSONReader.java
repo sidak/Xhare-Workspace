@@ -21,7 +21,10 @@ public class JSONReader {
     return sb.toString();
   }
 
-  public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
+  public static JSONObject readJsonFromUrl(String url, boolean useProxy) throws IOException, JSONException {
+    
+	if(useProxy) enableProxy();
+    
     InputStream is = new URL(url).openStream();
     try {
       BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
@@ -33,8 +36,13 @@ public class JSONReader {
     }
   }
 
+private static void enableProxy() {
+	System.setProperty("http.proxyHost", "proxyeast.idns.xerox.com");
+    System.setProperty("http.proxyPort", "8000");
+}
+
   public static void main(String[] args) throws IOException, JSONException {
-    JSONObject json = readJsonFromUrl("http://13.218.151.99:8080/otp/routers/default/plan?fromPlace=12.750005%2C77.780467&toPlace=12.750005%2C77.780467&mode=CAR");
+    JSONObject json = readJsonFromUrl("http://13.218.151.99:8080/otp/routers/default/plan?fromPlace=12.750005%2C77.780467&toPlace=12.750005%2C77.780467&mode=CAR", false);
     System.out.println(json.toString());
   }
 }
