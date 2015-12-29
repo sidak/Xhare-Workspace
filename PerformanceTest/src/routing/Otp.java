@@ -3,8 +3,6 @@ package routing;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 import org.jdom2.Document;
@@ -23,13 +21,17 @@ public class Otp {
 	
 	private static final double EARTH_RADIUS_IN_MILES=3958.75;
 	private static final double MILE_TO_KM=1.609344;
-	private static final double GEO_DIST_BOUND_IN_KM = 30;
+	private static final double GEO_DIST_BOUND_IN_KM = 5;
+	private static double[] lats;
+	private static double[] lngs;
+	public static int requestCounter=0;
+	
 	public static void main(String[] args) {
 		Scanner scan = new Scanner(System.in);
 		int num = scan.nextInt();
 		
-		double[] lats = new double[num];
-		double[] lngs = new double[num];
+		lats = new double[num];
+		lngs = new double[num];
 		
 		for(int i=0; i<num; i++){
 			lats[i] = scan.nextDouble();
@@ -37,6 +39,19 @@ public class Otp {
 		}
 		
 		long startTime = System.nanoTime();
+		doUnidirectionalRouting(num);
+		long endTime = System.nanoTime();
+		long timeTakenInNano = endTime - startTime;
+		System.out.println("Time taken for finding all pair shortest distance for 10 points: \n" + timeTakenInNano);
+		long timeTakenPerRequestInMillis = timeTakenInNano/1000000;
+		//timeTakenPerRequestInMillis/= requestCounter;
+		timeTakenPerRequestInMillis/= (num*num);
+		System.out.println("Time taken per request in millis: \n" + timeTakenPerRequestInMillis);
+		System.out.println("Total Request: \n" + requestCounter);
+		scan.close();
+		
+	}
+	private static void doBidirectionalRouting(int num) {
 		int i,j;
 		for(i=0; i<num; i++){
 			double srcLat, srcLng;
@@ -52,22 +67,32 @@ public class Otp {
 				
 			}
 		}
-		long endTime = System.nanoTime();
-		long timeTakenInNano = endTime - startTime;
-		System.out.println("Time taken for finding all pair shortest distance for 10 points: \n" + timeTakenInNano);
-		long timeTakenPerRequestInMillis = timeTakenInNano/1000000;
-		timeTakenPerRequestInMillis/= (num*num);
-		System.out.println("Time taken per request in millis: \n" + timeTakenPerRequestInMillis);
-		scan.close();
-		
+	}
+	private static void doUnidirectionalRouting(int num) {
+		int i,j;
+		for(i=0; i<num; i++){
+			double srcLat, srcLng;
+			srcLat = lats[i];
+			srcLng = lngs[i];
+			System.out.println("i is " + i );
+			for(j=i+1; j<num; j++){
+				
+				
+				//doRoutingFromJSONResponse(srcLat, srcLng, lats[j], lngs[j]);
+				//doGeometricRouting(srcLat, srcLng, lats[j], lngs[j]);
+				doConditionalRouting(srcLat, srcLng, lats[j], lngs[j]);
+				
+			}
+		}
 	}
 	private static void doConditionalRouting(double srcLat, double srcLng, double destLat, double destLng) {
 		double geoDist = distBetween(srcLat, srcLng, destLat, destLng);
-		if(DoubleHelper.greaterThan(geoDist, GEO_DIST_BOUND_IN_KM)){
-			doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng);
+		if(DoubleHelper.lessThan(geoDist, GEO_DIST_BOUND_IN_KM)){
+//			doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng);
+			requestCounter++;
 		}
 		else{
-			System.out.println("Geometric Distance between points in metres " + geoDist);
+//			System.out.println("Geometric Distance between points in metres " + geoDist);
 		}
 		
 	}
@@ -93,7 +118,7 @@ public class Otp {
 				* Math.sin(dLng / 2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 		double dist = Math.abs((EARTH_RADIUS_IN_MILES*MILE_TO_KM) * c);
-		System.out.println("Geometric Distance between points in metres " + dist);
+//		System.out.println("Geometric Distance between points in metres " + dist);
 		
 	}
 	private static void doRoutingFromJSONResponse(double srcLat, double srcLng, double destLat, double destLng) {
@@ -108,7 +133,7 @@ public class Otp {
 			JSONObject leg = (JSONObject) itinerary.getJSONArray("legs").get(0);
 			
 			double dist = leg.getDouble("distance");
-			System.out.println("Distance between points in metres " + dist);
+//			System.out.println("Distance between points in metres " + dist);
 			long startTime = leg.getLong("startTime");
 			long endTime = leg.getLong("endTime");
 			long timeTakenInMillis = endTime - startTime;
