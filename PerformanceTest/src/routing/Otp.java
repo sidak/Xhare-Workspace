@@ -14,17 +14,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import jsonParser.JSONReader;
+import util.DistanceHelper;
 import util.DoubleHelper;
 
 
 public class Otp {
 	
-	private static final double EARTH_RADIUS_IN_MILES=3958.75;
-	private static final double MILE_TO_KM=1.609344;
 	private static final double GEO_DIST_BOUND_IN_KM = 5;
 	private static double[] lats;
 	private static double[] lngs;
-	public static int requestCounter=0;
+	private static int requestCounter=0;
 	
 	public static void main(String[] args) {
 		Scanner scan = new Scanner(System.in);
@@ -38,106 +37,76 @@ public class Otp {
 			lngs[i] = scan.nextDouble();
 		}
 		
-		long startTime = System.nanoTime();
-		doUnidirectionalRouting(num);
-		long endTime = System.nanoTime();
-		long timeTakenInNano = endTime - startTime;
-		System.out.println("Time taken for finding all pair shortest distance for 10 points: \n" + timeTakenInNano);
-		long timeTakenPerRequestInMillis = timeTakenInNano/1000000;
-		//timeTakenPerRequestInMillis/= requestCounter;
-		timeTakenPerRequestInMillis/= (num*num);
-		System.out.println("Time taken per request in millis: \n" + timeTakenPerRequestInMillis);
-		System.out.println("Total Request: \n" + requestCounter);
+		doRouting(num);
+		
 		scan.close();
 		
 	}
-	private static void doBidirectionalRouting(int num) {
+	
+	/**
+	 * Performs routing assuming that distance from A to B is equal to distance from B to A
+	 * @param numLandmarks number of landmarks
+	 */
+	private static void doRouting(int numLandmarks) {
+		long routingStartTime = System.nanoTime();
+		
 		int i,j;
-		for(i=0; i<num; i++){
+		for(i=0; i<numLandmarks; i++){
 			double srcLat, srcLng;
 			srcLat = lats[i];
 			srcLng = lngs[i];
-			for(j=0; j<num; j++){
-				if(i==j) continue;
+			
+			System.out.println("Finding distances and times to all points from the point: " + srcLat + ", " + srcLng + " and index = " + i );
+			
+			for(j=i+1; j<numLandmarks; j++){
 				
-				System.out.println("i is " + i + " and j is " + j);
-				//doRoutingFromJSONResponse(srcLat, srcLng, lats[j], lngs[j]);
-				//doGeometricRouting(srcLat, srcLng, lats[j], lngs[j]);
+				System.out.println("To point " + lats[j] + ", " + lngs[j] + " and index = " + j);
+				long requestStartTime = System.nanoTime();
 				doConditionalRouting(srcLat, srcLng, lats[j], lngs[j]);
+				long requestEndTime = System.nanoTime();
+				double requestTimeInMillis = ((double)(requestEndTime - requestStartTime))/1000000.0;
+				System.out.println("Request Time: " + requestTimeInMillis);
 				
 			}
 		}
+		
+		long routingEndTime = System.nanoTime();
+		double routingTimeTakenInMillis = ((double)(routingEndTime - routingStartTime))/1000000.0;
+		System.out.println("Total time taken: \n" + routingTimeTakenInMillis);
+		System.out.println("Total number of requests: \n" + requestCounter);
 	}
-	private static void doUnidirectionalRouting(int num) {
-		int i,j;
-		for(i=0; i<num; i++){
-			double srcLat, srcLng;
-			srcLat = lats[i];
-			srcLng = lngs[i];
-			System.out.println("i is " + i );
-			for(j=i+1; j<num; j++){
-				
-				
-				//doRoutingFromJSONResponse(srcLat, srcLng, lats[j], lngs[j]);
-				//doGeometricRouting(srcLat, srcLng, lats[j], lngs[j]);
-				doConditionalRouting(srcLat, srcLng, lats[j], lngs[j]);
-				
-			}
-		}
-	}
+	
 	private static void doConditionalRouting(double srcLat, double srcLng, double destLat, double destLng) {
-		double geoDist = distBetween(srcLat, srcLng, destLat, destLng);
+		double geoDist = DistanceHelper.distBetween(srcLat, srcLng, destLat, destLng);
 		if(DoubleHelper.lessThan(geoDist, GEO_DIST_BOUND_IN_KM)){
-//			doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng);
+			doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng);
 			requestCounter++;
 		}
 		else{
-//			System.out.println("Geometric Distance between points in metres " + geoDist);
+			System.out.println("Distance: 0 and Time: -1, outside distance bound");
 		}
 		
 	}
-	public static double distBetween(double lat1, double lng1, double lat2,
-			double lng2) {
-		double dLat = Math.toRadians(lat2 - lat1);
-		double dLng = Math.toRadians(lng2 - lng1);
-		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-				+ Math.cos(Math.toRadians(lat1))
-				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
-				* Math.sin(dLng / 2);
-		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = Math.abs((EARTH_RADIUS_IN_MILES*MILE_TO_KM) * c);
-		return dist;
-	}
 	
-	private static void doGeometricRouting(double srcLat, double srcLng, double destLat, double destLng) {
-		double dLat = Math.toRadians(destLat - srcLat);
-		double dLng = Math.toRadians(destLng - srcLng);
-		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-				+ Math.cos(Math.toRadians(srcLat))
-				* Math.cos(Math.toRadians(destLat)) * Math.sin(dLng / 2)
-				* Math.sin(dLng / 2);
-		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double dist = Math.abs((EARTH_RADIUS_IN_MILES*MILE_TO_KM) * c);
-//		System.out.println("Geometric Distance between points in metres " + dist);
-		
-	}
 	private static void doRoutingFromJSONResponse(double srcLat, double srcLng, double destLat, double destLng) {
 		
 		String url = makeUrlString(srcLat, srcLng, destLat, destLng);
 		try {
 			JSONObject jsonResponse = JSONReader.readJsonFromUrl(url);
-			if(!jsonResponse.has("plan")) return;
+			if(!jsonResponse.has("plan")){
+				System.out.println("Distance: -1 and Time: -1, otp path not found");
+				return;
+			}
 			JSONObject planObject = jsonResponse.getJSONObject("plan");
 			JSONArray itineraries = planObject.getJSONArray("itineraries");
 			JSONObject itinerary = (JSONObject) itineraries.get(0);
 			JSONObject leg = (JSONObject) itinerary.getJSONArray("legs").get(0);
 			
 			double dist = leg.getDouble("distance");
-//			System.out.println("Distance between points in metres " + dist);
 			long startTime = leg.getLong("startTime");
 			long endTime = leg.getLong("endTime");
 			long timeTakenInMillis = endTime - startTime;
-			System.out.println("Time taken to find distance between a pair of points " + timeTakenInMillis);
+			System.out.println("Distance: " + dist + " and Time: " + timeTakenInMillis);
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
