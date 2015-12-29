@@ -16,13 +16,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import jsonParser.JSONReader;
+import util.DoubleHelper;
 
 
 public class Otp {
 	
 	private static final double EARTH_RADIUS_IN_MILES=3958.75;
 	private static final double MILE_TO_KM=1.609344;
-	
+	private static final double GEO_DIST_BOUND_IN_KM = 30;
 	public static void main(String[] args) {
 		Scanner scan = new Scanner(System.in);
 		int num = scan.nextInt();
@@ -46,7 +47,9 @@ public class Otp {
 				
 				System.out.println("i is " + i + " and j is " + j);
 				//doRoutingFromJSONResponse(srcLat, srcLng, lats[j], lngs[j]);
-				doGeometricRouting(srcLat, srcLng, lats[j], lngs[j]);
+				//doGeometricRouting(srcLat, srcLng, lats[j], lngs[j]);
+				doConditionalRouting(srcLat, srcLng, lats[j], lngs[j]);
+				
 			}
 		}
 		long endTime = System.nanoTime();
@@ -58,6 +61,29 @@ public class Otp {
 		scan.close();
 		
 	}
+	private static void doConditionalRouting(double srcLat, double srcLng, double destLat, double destLng) {
+		double geoDist = distBetween(srcLat, srcLng, destLat, destLng);
+		if(DoubleHelper.greaterThan(geoDist, GEO_DIST_BOUND_IN_KM)){
+			doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng);
+		}
+		else{
+			System.out.println("Geometric Distance between points in metres " + geoDist);
+		}
+		
+	}
+	public static double distBetween(double lat1, double lng1, double lat2,
+			double lng2) {
+		double dLat = Math.toRadians(lat2 - lat1);
+		double dLng = Math.toRadians(lng2 - lng1);
+		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+				+ Math.cos(Math.toRadians(lat1))
+				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2)
+				* Math.sin(dLng / 2);
+		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		double dist = Math.abs((EARTH_RADIUS_IN_MILES*MILE_TO_KM) * c);
+		return dist;
+	}
+	
 	private static void doGeometricRouting(double srcLat, double srcLng, double destLat, double destLng) {
 		double dLat = Math.toRadians(destLat - srcLat);
 		double dLng = Math.toRadians(destLng - srcLng);
