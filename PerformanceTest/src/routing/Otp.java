@@ -23,28 +23,25 @@ public class Otp {
 		Scanner scan = new Scanner(System.in);
 		int num = scan.nextInt();
 		
-		List<Double> lats = new ArrayList<Double>();
-		List<Double> lngs = new ArrayList<Double>();
+		double[] lats = new double[num];
+		double[] lngs = new double[num];
 		
 		for(int i=0; i<num; i++){
-			double lat, lng;
-			lat = scan.nextDouble();
-			lng = scan.nextDouble();
-			lats.add(lat);
-			lngs.add(lng);
+			lats[i] = scan.nextDouble();
+			lngs[i] = scan.nextDouble();
 		}
 		
 		long startTime = System.nanoTime();
-		for(int i=0; i<num; i++){
+		int i,j;
+		for(i=0; i<num; i++){
 			double srcLat, srcLng;
-			srcLat = lats.get(i);
-			srcLng = lngs.get(i);
-			for(int j=0; j<num; j++){
-				double destLat, destLng;
-				destLat = lats.get(j);
-				destLng = lngs.get(j);
+			srcLat = lats[i];
+			srcLng = lngs[i];
+			for(j=0; j<num; j++){
+				if(i==j) continue;
+				
 				System.out.println("i is " + i + " and j is " + j);
-				doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng);
+				doRoutingFromJSONResponse(srcLat, srcLng, lats[j], lngs[j]);
 			}
 		}
 		long endTime = System.nanoTime();
