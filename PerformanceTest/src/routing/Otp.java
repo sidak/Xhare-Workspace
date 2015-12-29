@@ -1,0 +1,128 @@
+package routing;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import jsonParser.JSONReader;
+
+
+public class Otp {
+	public static void main(String[] args) {
+		Scanner scan = new Scanner(System.in);
+		int num = scan.nextInt();
+		
+		List<Double> lats = new ArrayList<Double>();
+		List<Double> lngs = new ArrayList<Double>();
+		
+		for(int i=0; i<num; i++){
+			double lat, lng;
+			lat = scan.nextDouble();
+			lng = scan.nextDouble();
+			lats.add(lat);
+			lngs.add(lng);
+		}
+		
+		long startTime = System.nanoTime();
+		for(int i=0; i<num; i++){
+			double srcLat, srcLng;
+			srcLat = lats.get(i);
+			srcLng = lngs.get(i);
+			for(int j=0; j<num; j++){
+				double destLat, destLng;
+				destLat = lats.get(j);
+				destLng = lngs.get(j);
+				System.out.println("i is " + i + " and j is " + j);
+				doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng);
+			}
+		}
+		long endTime = System.nanoTime();
+		long timeTakenInNano = endTime - startTime;
+		System.out.println("Time taken for finding all pair shortest distance for 10 points: \n" + timeTakenInNano);
+		long timeTakenPerRequestInMillis = timeTakenInNano/1000000;
+		timeTakenPerRequestInMillis/= (num*num);
+		System.out.println("Time taken per request in millis: \n" + timeTakenPerRequestInMillis);
+		scan.close();
+		
+	}
+	
+	private static void doRoutingFromJSONResponse(double srcLat, double srcLng, double destLat, double destLng) {
+		
+		String url = makeUrlString(srcLat, srcLng, destLat, destLng);
+		try {
+			JSONObject jsonResponse = JSONReader.readJsonFromUrl(url);
+			if(!jsonResponse.has("plan")) return;
+			JSONObject planObject = jsonResponse.getJSONObject("plan");
+			JSONArray itineraries = planObject.getJSONArray("itineraries");
+			JSONObject itinerary = (JSONObject) itineraries.get(0);
+			JSONObject leg = (JSONObject) itinerary.getJSONArray("legs").get(0);
+			
+			double dist = leg.getDouble("distance");
+			System.out.println("Distance between points in metres " + dist);
+			long startTime = leg.getLong("startTime");
+			long endTime = leg.getLong("endTime");
+			long timeTakenInMillis = endTime - startTime;
+			System.out.println("Time taken to find distance between a pair of points " + timeTakenInMillis);
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private static void doRoutingFromXMLResponse(double srcLat, double srcLng, double destLat, double destLng) {
+		String urlString = makeUrlString(srcLat, srcLng, destLat, destLng);
+		
+		SAXBuilder saxBuilder = new SAXBuilder();
+		try {
+			URL url = new URL(urlString);
+			Document document = saxBuilder.build(url);
+			Element responseElement = document.getRootElement();
+			Element planElement = responseElement.getChild("plan");
+			Element itineraryElements = planElement.getChild("itineraries");
+			Element itinerary = itineraryElements.getChild("itineraries");
+			
+			Element legElements = itinerary.getChild("legs");
+			Element leg = legElements.getChild("legs");
+			String dist = leg.getChildText("distance");
+			System.out.println("Distance between points in metres " + dist);
+			long startTime = Long.getLong(leg.getChildText("startTime"));
+			long endTime = Long.getLong(leg.getChildText("endTime"));
+			long timeTakenInMillis = endTime - startTime;
+			System.out.println("Time taken to find distance between a pair of points " + timeTakenInMillis);
+			
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (JDOMException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private static String makeUrlString(double srcLat, double srcLng, double destLat, double destLng) {
+		// http://13.218.151.99:8080/otp/routers/default/plan?fromPlace=13.0206140544476%2C77.486572265625&toPlace=12.940322128384627%2C77.63626098632812&mode=CAR
+		String baseUrl = "http://13.218.151.99:8080/otp/routers/default/plan?";
+		String srcLoc = "fromPlace=" + srcLat + "%2C" + srcLng;
+		String destLoc = "toPlace=" + destLat + "%2C" + destLng;
+		String modeString = "mode=CAR";
+		String urlString = baseUrl + srcLoc + "&" + destLoc + "&" + modeString;
+		return urlString;
+	}
+	
+}
+
