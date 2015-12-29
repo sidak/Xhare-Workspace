@@ -1,8 +1,10 @@
 package routing;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -91,52 +93,76 @@ public class Otp {
 	 */
 	private static void doRouting() {
 		long routingStartTime = System.nanoTime();
-		
-		int i,j;
-		for(i=0; i<numLandmarks; i++){
-			double srcLat, srcLng;
-			srcLat = lats[i];
-			srcLng = lngs[i];
+		try {
+			FileWriter fileWriter = new FileWriter(outputFileName);
+			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 			
-			System.out.println("Finding distances and times to all points from the point: " + srcLat + ", " + srcLng + " and index = " + i );
-			
-			for(j=i+1; j<numLandmarks; j++){
+			int i,j;
+			for(i=0; i<numLandmarks; i++){
+				double srcLat, srcLng;
+				srcLat = lats[i];
+				srcLng = lngs[i];
 				
-				System.out.println("To point " + lats[j] + ", " + lngs[j] + " and index = " + j);
-				long requestStartTime = System.nanoTime();
-				doConditionalRouting(srcLat, srcLng, lats[j], lngs[j]);
-				long requestEndTime = System.nanoTime();
-				double requestTimeInMillis = ((double)(requestEndTime - requestStartTime))/1000000.0;
-				System.out.println("Request Time: " + requestTimeInMillis);
+				System.out.println("Finding distances and times to all points from the point: " + srcLat + ", " + srcLng + " and index = " + i );
 				
+				for(j=i+1; j<numLandmarks; j++){
+					
+					bufferedWriter.write(""+srcLat + " " + srcLng + " ");
+					bufferedWriter.write(""+lats[j] + " " + lngs[j] + " ");
+					System.out.println("To point " + lats[j] + ", " + lngs[j] + " and index = " + j);
+					long requestStartTime = System.nanoTime();
+					doConditionalRouting(srcLat, srcLng, lats[j], lngs[j], bufferedWriter);
+					long requestEndTime = System.nanoTime();
+					double requestTimeInMillis = ((double)(requestEndTime - requestStartTime))/1000000.0;
+					bufferedWriter.write("" + requestTimeInMillis);
+					//System.out.println("Request Time: " + requestTimeInMillis);
+					bufferedWriter.newLine();
+				}
 			}
-		}
+			
+			long routingEndTime = System.nanoTime();
+			double routingTimeTakenInMillis = ((double)(routingEndTime - routingStartTime))/1000000.0;
+			System.out.println("Total time taken: \n" + routingTimeTakenInMillis);
+			System.out.println("Total number of requests: \n" + requestCounter);
+			
+			
+			
+			bufferedWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
 		
-		long routingEndTime = System.nanoTime();
-		double routingTimeTakenInMillis = ((double)(routingEndTime - routingStartTime))/1000000.0;
-		System.out.println("Total time taken: \n" + routingTimeTakenInMillis);
-		System.out.println("Total number of requests: \n" + requestCounter);
-	}
-	
-	private static void doConditionalRouting(double srcLat, double srcLng, double destLat, double destLng) {
-		double geoDist = DistanceHelper.distBetween(srcLat, srcLng, destLat, destLng);
-		if(DoubleHelper.lessThan(geoDist, GEO_DIST_BOUND_IN_KM)){
-			doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng);
-			requestCounter++;
-		}
-		else{
-			System.out.println("Distance: 0 and Time: -1, outside distance bound");
-		}
+		
 		
 	}
 	
-	private static void doRoutingFromJSONResponse(double srcLat, double srcLng, double destLat, double destLng) {
+	private static void doConditionalRouting(double srcLat, double srcLng, double destLat, double destLng, 
+			BufferedWriter bufferedWriter) {
+		try{
+			double geoDist = DistanceHelper.distBetween(srcLat, srcLng, destLat, destLng);
+			if(DoubleHelper.lessThan(geoDist, GEO_DIST_BOUND_IN_KM)){
+				doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng, bufferedWriter);
+				requestCounter++;
+			}
+			else{
+				bufferedWriter.write("0 -1 ");
+				//System.out.println("Distance: 0 and Time: -1, outside distance bound");
+			}
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private static void doRoutingFromJSONResponse(double srcLat, double srcLng, double destLat, double destLng,
+			BufferedWriter bufferedWriter) {
 		
 		String url = makeUrlString(srcLat, srcLng, destLat, destLng);
 		try {
 			JSONObject jsonResponse = JSONReader.readJsonFromUrl(url, false);
 			if(!jsonResponse.has("plan")){
-				System.out.println("Distance: -1 and Time: -1, otp path not found");
+				bufferedWriter.write("-1 -1 ");
+				//System.out.println("Distance: -1 and Time: -1, otp path not found");
 				return;
 			}
 			JSONObject planObject = jsonResponse.getJSONObject("plan");
@@ -148,7 +174,8 @@ public class Otp {
 			long startTime = leg.getLong("startTime");
 			long endTime = leg.getLong("endTime");
 			long timeTakenInMillis = endTime - startTime;
-			System.out.println("Distance: " + dist + " and Time: " + timeTakenInMillis);
+			bufferedWriter.write("" + dist + " " + timeTakenInMillis + " ");
+			//System.out.println("Distance: " + dist + " and Time: " + timeTakenInMillis);
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
