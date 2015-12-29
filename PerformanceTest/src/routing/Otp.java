@@ -1,14 +1,10 @@
 package routing;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Scanner;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -24,86 +20,42 @@ import util.DoubleHelper;
 
 
 public class Otp {
+	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\SmallOutput";
 	
-	private static final double GEO_DIST_BOUND_IN_KM = 5;
-	private static double[] lats;
-	private static double[] lngs;
-	private static int requestCounter=0;
-	private static String inputFileName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\InputFiles\\SmallInput.txt";
-	private static String outputFileName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\SmallOutput.txt";
-	private static int numLandmarks = 0;
+	private double geoDistBoundInKm;
+	private double[] lats;
+	private double[] lngs;
+	private int numLandmarks;
+	private int requestCounter;
 	
-	public static void main(String[] args) {
-		takeInputFromFile();
-		doRouting();
+	public Otp(double[] lats, double[] lngs, int numLandmarks, double geoDistBoundInKm){
+		this.lats = lats;
+		this.lngs = lngs;
+		this.numLandmarks = numLandmarks;
+		this.requestCounter = 0;
+		this.geoDistBoundInKm = geoDistBoundInKm;
 	}
-
-	private static void takeInputFromFile() {
-        String line = null;
-        int lineCount = 0;
-        try {
-            FileReader fileReader = new FileReader(inputFileName);
-
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            
-            while((line = bufferedReader.readLine()) != null) {
-                if(lineCount == 0){
-                	numLandmarks = Integer.parseInt(line);
-                	lats = new double[numLandmarks];
-                	lngs = new double[numLandmarks];
-                }
-                else{
-                	String[] point = new String[2];
-                	point = line.split("\t");
-                	
-                	lats[lineCount-1] = Double.parseDouble(point[0]);
-                	lngs[lineCount-1] = Double.parseDouble(point[1]);
-                }
-                lineCount ++;
-            }   
-
-            bufferedReader.close();         
-        }
-        catch(FileNotFoundException ex) {
-            System.out.println("Unable to open file '" + inputFileName + "'");                
-        }
-        catch(IOException ex) {
-            System.out.println("Error reading file '" + inputFileName + "'");                  
-            ex.printStackTrace();
-        }
-	}
-
-	private static void takeInputFromConsole() {
-		Scanner scan = new Scanner(System.in);
-		numLandmarks = scan.nextInt();
-		
-		lats = new double[numLandmarks];
-		lngs = new double[numLandmarks];
-		
-		for(int i=0; i<numLandmarks; i++){
-			lats[i] = scan.nextDouble();
-			lngs[i] = scan.nextDouble();
-		}
-		scan.close();
-	}
+	
 	
 	/**
 	 * Performs routing assuming that distance from A to B is equal to distance from B to A
 	 * @param numLandmarks number of landmarks
 	 */
-	private static void doRouting() {
+	public void doRouting(int startIdx, int mod) {
 		long routingStartTime = System.nanoTime();
 		try {
+			String outputFileName = outputFileBaseName +"_" + startIdx + ".txt"; 
 			FileWriter fileWriter = new FileWriter(outputFileName);
 			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 			
+			
 			int i,j;
-			for(i=0; i<numLandmarks; i++){
+			for(i=startIdx; i<numLandmarks; i+=mod){
 				double srcLat, srcLng;
 				srcLat = lats[i];
 				srcLng = lngs[i];
 				
-				System.out.println("Finding distances and times to all points from the point: " + srcLat + ", " + srcLng + " and index = " + i );
+				System.out.println("Finding distances and times to all points from the point: " + srcLat + ", " + srcLng + " and index = " + i +" and thread id is " + startIdx );
 				
 				for(j=i+1; j<numLandmarks; j++){
 					
@@ -136,11 +88,11 @@ public class Otp {
 		
 	}
 	
-	private static void doConditionalRouting(double srcLat, double srcLng, double destLat, double destLng, 
+	private void doConditionalRouting(double srcLat, double srcLng, double destLat, double destLng, 
 			BufferedWriter bufferedWriter) {
 		try{
 			double geoDist = DistanceHelper.distBetween(srcLat, srcLng, destLat, destLng);
-			if(DoubleHelper.lessThan(geoDist, GEO_DIST_BOUND_IN_KM)){
+			if(DoubleHelper.lessThan(geoDist, geoDistBoundInKm)){
 				doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng, bufferedWriter);
 				requestCounter++;
 			}
@@ -154,7 +106,7 @@ public class Otp {
 		
 	}
 	
-	private static void doRoutingFromJSONResponse(double srcLat, double srcLng, double destLat, double destLng,
+	private void doRoutingFromJSONResponse(double srcLat, double srcLng, double destLat, double destLng,
 			BufferedWriter bufferedWriter) {
 		
 		String url = makeUrlString(srcLat, srcLng, destLat, destLng);
@@ -185,7 +137,7 @@ public class Otp {
 		
 	}
 
-	private static void doRoutingFromXMLResponse(double srcLat, double srcLng, double destLat, double destLng) {
+	private void doRoutingFromXMLResponse(double srcLat, double srcLng, double destLat, double destLng) {
 		String urlString = makeUrlString(srcLat, srcLng, destLat, destLng);
 		
 		SAXBuilder saxBuilder = new SAXBuilder();
@@ -216,7 +168,7 @@ public class Otp {
 		
 	}
 	
-	private static String makeUrlString(double srcLat, double srcLng, double destLat, double destLng) {
+	private String makeUrlString(double srcLat, double srcLng, double destLat, double destLng) {
 		// http://13.218.151.99:8080/otp/routers/default/plan?fromPlace=13.0206140544476%2C77.486572265625&toPlace=12.940322128384627%2C77.63626098632812&mode=CAR
 		String baseUrl = "http://13.218.151.99:8080/otp/routers/default/plan?";
 		String srcLoc = "fromPlace=" + srcLat + "%2C" + srcLng;
@@ -225,6 +177,7 @@ public class Otp {
 		String urlString = baseUrl + srcLoc + "&" + destLoc + "&" + modeString;
 		return urlString;
 	}
+
 	
 }
 
