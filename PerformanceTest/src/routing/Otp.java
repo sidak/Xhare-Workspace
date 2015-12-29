@@ -1,5 +1,8 @@
 package routing;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,30 +27,69 @@ public class Otp {
 	private static double[] lats;
 	private static double[] lngs;
 	private static int requestCounter=0;
+	private static String inputFileName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\InputFiles\\SmallInput.txt";
+	private static String outputFileName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\SmallOutput.txt";
+	private static int numLandmarks = 0;
 	
 	public static void main(String[] args) {
+		takeInputFromFile();
+		doRouting();
+	}
+
+	private static void takeInputFromFile() {
+        String line = null;
+        int lineCount = 0;
+        try {
+            FileReader fileReader = new FileReader(inputFileName);
+
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            
+            while((line = bufferedReader.readLine()) != null) {
+                if(lineCount == 0){
+                	numLandmarks = Integer.parseInt(line);
+                	lats = new double[numLandmarks];
+                	lngs = new double[numLandmarks];
+                }
+                else{
+                	String[] point = new String[2];
+                	point = line.split("\t");
+                	
+                	lats[lineCount-1] = Double.parseDouble(point[0]);
+                	lngs[lineCount-1] = Double.parseDouble(point[1]);
+                }
+                lineCount ++;
+            }   
+
+            bufferedReader.close();         
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println("Unable to open file '" + inputFileName + "'");                
+        }
+        catch(IOException ex) {
+            System.out.println("Error reading file '" + inputFileName + "'");                  
+            ex.printStackTrace();
+        }
+	}
+
+	private static void takeInputFromConsole() {
 		Scanner scan = new Scanner(System.in);
-		int num = scan.nextInt();
+		numLandmarks = scan.nextInt();
 		
-		lats = new double[num];
-		lngs = new double[num];
+		lats = new double[numLandmarks];
+		lngs = new double[numLandmarks];
 		
-		for(int i=0; i<num; i++){
+		for(int i=0; i<numLandmarks; i++){
 			lats[i] = scan.nextDouble();
 			lngs[i] = scan.nextDouble();
 		}
-		
-		doRouting(num);
-		
 		scan.close();
-		
 	}
 	
 	/**
 	 * Performs routing assuming that distance from A to B is equal to distance from B to A
 	 * @param numLandmarks number of landmarks
 	 */
-	private static void doRouting(int numLandmarks) {
+	private static void doRouting() {
 		long routingStartTime = System.nanoTime();
 		
 		int i,j;
