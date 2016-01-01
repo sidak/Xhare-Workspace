@@ -7,13 +7,17 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
-	private static final double GEO_DIST_BOUND_IN_KM = 5;
+	private static final double GEO_CAR_DIST_BOUND_IN_KM = 5;
+	private static final double GEO_WALK_DIST_BOUND_IN_KM = 2;
+	private static final String CAR_MODE = "CAR";
+	private static final String WALK_MODE = "WALK";
+
 	private static double[] lats;
 	private static double[] lngs;
-	private static String inputFileName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\InputFiles\\SmallInput.txt";
+	private static String inputFileName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\InputFiles\\gridCentersSmall.txt";
 	private static int numLandmarks = 0;
 	private static final int NUM_THREADS = 4;
-	
+		
 	private static void takeInputFromFileAndInitialise() {
         String line = null;
         int lineCount = 0;
@@ -52,7 +56,9 @@ public class Main {
 	public static void main(String[] args) {
 		
 		takeInputFromFileAndInitialise();
-		Otp otp = new Otp(lats, lngs, numLandmarks, GEO_DIST_BOUND_IN_KM);
+		//Otp otp = new Otp(lats, lngs, numLandmarks, GEO_CAR_DIST_BOUND_IN_KM, CAR_MODE);
+		Otp otp = new Otp(lats, lngs, numLandmarks, GEO_WALK_DIST_BOUND_IN_KM, WALK_MODE);
+		
 		for(int i=0; i<NUM_THREADS; i++){
 			OtpThread otpThread = new OtpThread(i, NUM_THREADS, otp);
 			otpThread.start();

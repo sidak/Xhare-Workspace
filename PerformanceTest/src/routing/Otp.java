@@ -20,20 +20,22 @@ import util.DoubleHelper;
 
 
 public class Otp {
-	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\SmallOutput";
+	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\walkingDistancesSmall";
 	
 	private double geoDistBoundInKm;
 	private double[] lats;
 	private double[] lngs;
 	private int numLandmarks;
 	private int requestCounter;
+	private String travelMode;
 	
-	public Otp(double[] lats, double[] lngs, int numLandmarks, double geoDistBoundInKm){
+	public Otp(double[] lats, double[] lngs, int numLandmarks, double geoDistBoundInKm, String mode){
 		this.lats = lats;
 		this.lngs = lngs;
 		this.numLandmarks = numLandmarks;
 		this.requestCounter = 0;
 		this.geoDistBoundInKm = geoDistBoundInKm;
+		this.travelMode = mode;
 	}
 	
 	
@@ -58,6 +60,57 @@ public class Otp {
 				System.out.println("Finding distances and times to all points from the point: " + srcLat + ", " + srcLng + " and index = " + i +" and thread id is " + startIdx );
 				
 				for(j=i+1; j<numLandmarks; j++){
+					
+					bufferedWriter.write(""+srcLat + " " + srcLng + " ");
+					bufferedWriter.write(""+lats[j] + " " + lngs[j] + " ");
+					System.out.println("To point " + lats[j] + ", " + lngs[j] + " and index = " + j);
+					long requestStartTime = System.nanoTime();
+					doConditionalRouting(srcLat, srcLng, lats[j], lngs[j], bufferedWriter);
+					long requestEndTime = System.nanoTime();
+					double requestTimeInMillis = ((double)(requestEndTime - requestStartTime))/1000000.0;
+					bufferedWriter.write("" + requestTimeInMillis);
+					//System.out.println("Request Time: " + requestTimeInMillis);
+					bufferedWriter.newLine();
+				}
+			}
+			
+			long routingEndTime = System.nanoTime();
+			double routingTimeTakenInMillis = ((double)(routingEndTime - routingStartTime))/1000000.0;
+			System.out.println("Total time taken: \n" + routingTimeTakenInMillis);
+			System.out.println("Total number of requests: \n" + requestCounter);
+			
+			
+			
+			bufferedWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
+		
+		
+		
+	}
+	
+	/**
+	 * Performs routing assuming that distance from A to B is not equal to distance from B to A
+	 * @param numLandmarks number of landmarks
+	 */
+	public void doBidirectionalRouting(int startIdx, int mod) {
+		long routingStartTime = System.nanoTime();
+		try {
+			String outputFileName = outputFileBaseName +"_" + startIdx + ".txt"; 
+			FileWriter fileWriter = new FileWriter(outputFileName);
+			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+			
+			
+			int i,j;
+			for(i=startIdx; i<numLandmarks; i+=mod){
+				double srcLat, srcLng;
+				srcLat = lats[i];
+				srcLng = lngs[i];
+				
+				System.out.println("Finding distances and times to all points from the point: " + srcLat + ", " + srcLng + " and index = " + i +" and thread id is " + startIdx );
+				
+				for(j=0; j<numLandmarks; j++){
 					
 					bufferedWriter.write(""+srcLat + " " + srcLng + " ");
 					bufferedWriter.write(""+lats[j] + " " + lngs[j] + " ");
@@ -173,7 +226,7 @@ public class Otp {
 		String baseUrl = "http://13.218.151.99:8080/otp/routers/default/plan?";
 		String srcLoc = "fromPlace=" + srcLat + "%2C" + srcLng;
 		String destLoc = "toPlace=" + destLat + "%2C" + destLng;
-		String modeString = "mode=CAR";
+		String modeString = "mode=" + travelMode;
 		String urlString = baseUrl + srcLoc + "&" + destLoc + "&" + modeString;
 		return urlString;
 	}
