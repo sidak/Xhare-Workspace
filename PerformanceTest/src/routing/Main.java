@@ -11,7 +11,9 @@ public class Main {
 	private static final double GEO_WALK_DIST_BOUND_IN_KM = 2;
 	private static final String CAR_MODE = "CAR";
 	private static final String WALK_MODE = "WALK";
-
+	private static final long TIME_BOUND_IN_MILLIS = 5*60*1000;
+	private static final double SPEEDLIMIT_IN_KM_HR = 60.0;
+	
 	private static double[] lats;
 	private static double[] lngs;
 	private static String inputFileName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\InputFiles\\gridCentersSmall.txt";
@@ -56,8 +58,8 @@ public class Main {
 	public static void main(String[] args) {
 		
 		takeInputFromFileAndInitialise();
-		//Otp otp = new Otp(lats, lngs, numLandmarks, GEO_CAR_DIST_BOUND_IN_KM, CAR_MODE);
-		Otp otp = new Otp(lats, lngs, numLandmarks, GEO_WALK_DIST_BOUND_IN_KM, WALK_MODE);
+		Otp otp = new Otp(lats, lngs, numLandmarks, TIME_BOUND_IN_MILLIS, SPEEDLIMIT_IN_KM_HR, CAR_MODE);
+		//Otp otp = new Otp(lats, lngs, numLandmarks, GEO_WALK_DIST_BOUND_IN_KM, WALK_MODE);
 		
 		for(int i=0; i<NUM_THREADS; i++){
 			OtpThread otpThread = new OtpThread(i, NUM_THREADS, otp);

@@ -16,15 +16,16 @@ import org.json.JSONObject;
 
 import jsonParser.JSONReader;
 import util.DistanceHelper;
-import util.DoubleHelper;
 
 
 public class Otp {
-	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\walkingDistancesSmall";
+	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\walkingDistancesSmall1";
 	private static final String distMatrixFileName = outputFileBaseName + "_DistMatrix.csv";
 	private static final String timeMatrixFileName = outputFileBaseName + "_TimeMatrix.csv";
 	
 	private double geoDistBoundInKm;
+	private long timeBoundInMillis;
+	private double speedLimitInKmHr;
 	private double[] lats;
 	private double[] lngs;
 	private int numLandmarks;
@@ -52,6 +53,23 @@ public class Otp {
 		
 	}
 	
+	public Otp(double[] lats, double[] lngs, int numLandmarks, long timeBoundInMillis, double speedLimitInKmHr,  String mode){
+		this.lats = lats;
+		this.lngs = lngs;
+		this.numLandmarks = numLandmarks;
+		this.requestCounter = 0;
+		this.timeBoundInMillis = timeBoundInMillis;
+		this.speedLimitInKmHr = speedLimitInKmHr;
+		this.travelMode = mode;
+		this.distMatrix = new double[numLandmarks][];
+		this.timeMatrix = new long[numLandmarks][];
+		
+		for(int i=0; i<numLandmarks; i++){
+			this.distMatrix[i] = new double[numLandmarks];
+			this.timeMatrix[i] = new long[numLandmarks];
+		}
+		
+	}
 	
 	/**
 	 * Performs routing assuming that distance from A to B is equal to distance from B to A
@@ -103,7 +121,9 @@ public class Otp {
 			
 			bufferedWriter.close();
 			
-			writeMatrixToFile();
+			writeDistMatrixToFile(distMatrix, distMatrixFileName);
+			writeTimeMatrixToFile(timeMatrix, timeMatrixFileName);
+			
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -116,10 +136,10 @@ public class Otp {
 	/*
 	 * writes a csv file containing the matrix
 	 */
-	private void writeMatrixToFile() {
+	private void writeDistMatrixToFile(double[][] matrix, String fileName) {
 		FileWriter fileWriter;
 		try {
-			fileWriter = new FileWriter(distMatrixFileName);
+			fileWriter = new FileWriter(fileName);
 			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 			for(int i=0; i<numLandmarks; i++){
 				bufferedWriter.append("x"+ i);
@@ -128,7 +148,31 @@ public class Otp {
 			bufferedWriter.newLine();
 			for(int i=0; i<numLandmarks; i++){
 				for(int j=0; j<numLandmarks; j++){
-					bufferedWriter.append("" + distMatrix[i][j]);
+					bufferedWriter.append("" + matrix[i][j]);
+					if(j<(numLandmarks-1)) bufferedWriter.append(",");
+				}
+				bufferedWriter.newLine();
+			}
+			bufferedWriter.close();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void writeTimeMatrixToFile(long[][] matrix, String fileName) {
+		FileWriter fileWriter;
+		try {
+			fileWriter = new FileWriter(fileName);
+			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+			for(int i=0; i<numLandmarks; i++){
+				bufferedWriter.append("t"+ i);
+				if(i<(numLandmarks-1)) bufferedWriter.append(",");
+			}
+			bufferedWriter.newLine();
+			for(int i=0; i<numLandmarks; i++){
+				for(int j=0; j<numLandmarks; j++){
+					bufferedWriter.append("" + matrix[i][j]);
 					if(j<(numLandmarks-1)) bufferedWriter.append(",");
 				}
 				bufferedWriter.newLine();
@@ -190,8 +234,9 @@ public class Otp {
 			
 			
 			bufferedWriter.close();
-			writeMatrixToFile();
-
+			writeDistMatrixToFile(distMatrix, distMatrixFileName);
+			writeTimeMatrixToFile(timeMatrix, timeMatrixFileName);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}	
@@ -203,9 +248,11 @@ public class Otp {
 	private void doConditionalRouting(int idx_i, int idx_j, double srcLat, double srcLng, double destLat, double destLng, 
 			BufferedWriter bufferedWriter) {
 		try{
-			//TODO: Constraint wrt to time needs to be thought out
 			double geoDist = DistanceHelper.distBetween(srcLat, srcLng, destLat, destLng);
-			if(DoubleHelper.lessThan(geoDist, geoDistBoundInKm)){
+			long geoTimeInMillis = (long) ((geoDist*3600)/speedLimitInKmHr); 
+			
+			if(geoTimeInMillis < timeBoundInMillis){
+			//if(DoubleHelper.lessThan(geoDist, geoDistBoundInKm)){
 				doRoutingFromJSONResponse(idx_i,idx_j, srcLat, srcLng, destLat, destLng, bufferedWriter);
 				requestCounter++;
 			}
