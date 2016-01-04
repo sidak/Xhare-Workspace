@@ -21,6 +21,8 @@ import util.DoubleHelper;
 
 public class Otp {
 	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\walkingDistancesSmall";
+	private static final String distMatrixFileName = outputFileBaseName + "_DistMatrix.csv";
+	private static final String timeMatrixFileName = outputFileBaseName + "_TimeMatrix.csv";
 	
 	private double geoDistBoundInKm;
 	private double[] lats;
@@ -28,6 +30,10 @@ public class Otp {
 	private int numLandmarks;
 	private int requestCounter;
 	private String travelMode;
+	private double[][] distMatrix;
+	private long[][] timeMatrix;
+	
+	
 	
 	public Otp(double[] lats, double[] lngs, int numLandmarks, double geoDistBoundInKm, String mode){
 		this.lats = lats;
@@ -36,6 +42,14 @@ public class Otp {
 		this.requestCounter = 0;
 		this.geoDistBoundInKm = geoDistBoundInKm;
 		this.travelMode = mode;
+		this.distMatrix = new double[numLandmarks][];
+		this.timeMatrix = new long[numLandmarks][];
+		
+		for(int i=0; i<numLandmarks; i++){
+			this.distMatrix[i] = new double[numLandmarks];
+			this.timeMatrix[i] = new long[numLandmarks];
+		}
+		
 	}
 	
 	
@@ -59,13 +73,21 @@ public class Otp {
 				
 				System.out.println("Finding distances and times to all points from the point: " + srcLat + ", " + srcLng + " and index = " + i +" and thread id is " + startIdx );
 				
-				for(j=i+1; j<numLandmarks; j++){
+				for(j=i; j<numLandmarks; j++){
+					
+					if(j==i){
+						distMatrix[i][j] = 0;
+						timeMatrix[i][j] = 0;
+						continue;
+					}
 					
 					bufferedWriter.write(""+srcLat + " " + srcLng + " ");
 					bufferedWriter.write(""+lats[j] + " " + lngs[j] + " ");
 					System.out.println("To point " + lats[j] + ", " + lngs[j] + " and index = " + j);
 					long requestStartTime = System.nanoTime();
-					doConditionalRouting(srcLat, srcLng, lats[j], lngs[j], bufferedWriter);
+					doConditionalRouting(i, j, srcLat, srcLng, lats[j], lngs[j], bufferedWriter);
+					distMatrix[j][i] = distMatrix[i][j];
+					timeMatrix[j][i] = timeMatrix[i][j];
 					long requestEndTime = System.nanoTime();
 					double requestTimeInMillis = ((double)(requestEndTime - requestStartTime))/1000000.0;
 					bufferedWriter.write("" + requestTimeInMillis);
@@ -79,9 +101,10 @@ public class Otp {
 			System.out.println("Total time taken: \n" + routingTimeTakenInMillis);
 			System.out.println("Total number of requests: \n" + requestCounter);
 			
-			
-			
 			bufferedWriter.close();
+			
+			writeMatrixToFile();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}	
@@ -90,6 +113,34 @@ public class Otp {
 		
 	}
 	
+	/*
+	 * writes a csv file containing the matrix
+	 */
+	private void writeMatrixToFile() {
+		FileWriter fileWriter;
+		try {
+			fileWriter = new FileWriter(distMatrixFileName);
+			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+			for(int i=0; i<numLandmarks; i++){
+				bufferedWriter.append("x"+ i);
+				if(i<(numLandmarks-1)) bufferedWriter.append(",");
+			}
+			bufferedWriter.newLine();
+			for(int i=0; i<numLandmarks; i++){
+				for(int j=0; j<numLandmarks; j++){
+					bufferedWriter.append("" + distMatrix[i][j]);
+					if(j<(numLandmarks-1)) bufferedWriter.append(",");
+				}
+				bufferedWriter.newLine();
+			}
+			bufferedWriter.close();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
 	/**
 	 * Performs routing assuming that distance from A to B is not equal to distance from B to A
 	 * @param numLandmarks number of landmarks
@@ -112,11 +163,17 @@ public class Otp {
 				
 				for(j=0; j<numLandmarks; j++){
 					
+					if(j==i){
+						distMatrix[i][j] = 0;
+						timeMatrix[i][j] = 0;
+						continue;
+					}
+					
 					bufferedWriter.write(""+srcLat + " " + srcLng + " ");
 					bufferedWriter.write(""+lats[j] + " " + lngs[j] + " ");
 					System.out.println("To point " + lats[j] + ", " + lngs[j] + " and index = " + j);
 					long requestStartTime = System.nanoTime();
-					doConditionalRouting(srcLat, srcLng, lats[j], lngs[j], bufferedWriter);
+					doConditionalRouting(i, j, srcLat, srcLng, lats[j], lngs[j], bufferedWriter);
 					long requestEndTime = System.nanoTime();
 					double requestTimeInMillis = ((double)(requestEndTime - requestStartTime))/1000000.0;
 					bufferedWriter.write("" + requestTimeInMillis);
@@ -133,6 +190,8 @@ public class Otp {
 			
 			
 			bufferedWriter.close();
+			writeMatrixToFile();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}	
@@ -141,17 +200,21 @@ public class Otp {
 		
 	}
 	
-	private void doConditionalRouting(double srcLat, double srcLng, double destLat, double destLng, 
+	private void doConditionalRouting(int idx_i, int idx_j, double srcLat, double srcLng, double destLat, double destLng, 
 			BufferedWriter bufferedWriter) {
 		try{
+			//TODO: Constraint wrt to time needs to be thought out
 			double geoDist = DistanceHelper.distBetween(srcLat, srcLng, destLat, destLng);
 			if(DoubleHelper.lessThan(geoDist, geoDistBoundInKm)){
-				doRoutingFromJSONResponse(srcLat, srcLng, destLat, destLng, bufferedWriter);
+				doRoutingFromJSONResponse(idx_i,idx_j, srcLat, srcLng, destLat, destLng, bufferedWriter);
 				requestCounter++;
 			}
 			else{
-				bufferedWriter.write("0 -1 ");
-				//System.out.println("Distance: 0 and Time: -1, outside distance bound");
+				bufferedWriter.write("-2 -2 ");
+				distMatrix[idx_i][idx_j] =-2;
+				timeMatrix[idx_i][idx_j] = -2;
+				
+				//System.out.println("Distance: -2 and Time: -2, outside distance bound");
 			}
 		}catch(IOException e){
 			e.printStackTrace();
@@ -159,7 +222,7 @@ public class Otp {
 		
 	}
 	
-	private void doRoutingFromJSONResponse(double srcLat, double srcLng, double destLat, double destLng,
+	private void doRoutingFromJSONResponse(int idx_i, int idx_j, double srcLat, double srcLng, double destLat, double destLng,
 			BufferedWriter bufferedWriter) {
 		
 		String url = makeUrlString(srcLat, srcLng, destLat, destLng);
@@ -167,6 +230,9 @@ public class Otp {
 			JSONObject jsonResponse = JSONReader.readJsonFromUrl(url, false);
 			if(!jsonResponse.has("plan")){
 				bufferedWriter.write("-1 -1 ");
+				distMatrix[idx_i][idx_j] = -1;
+				timeMatrix[idx_i][idx_j] = -1;
+				
 				//System.out.println("Distance: -1 and Time: -1, otp path not found");
 				return;
 			}
@@ -180,6 +246,8 @@ public class Otp {
 			long endTime = leg.getLong("endTime");
 			long timeTakenInMillis = endTime - startTime;
 			bufferedWriter.write("" + dist + " " + timeTakenInMillis + " ");
+			distMatrix[idx_i][idx_j] = dist;
+			timeMatrix[idx_i][idx_j] = timeTakenInMillis;
 			//System.out.println("Distance: " + dist + " and Time: " + timeTakenInMillis);
 			
 		} catch (JSONException e) {
