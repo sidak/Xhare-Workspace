@@ -16,10 +16,11 @@ import org.json.JSONObject;
 
 import jsonParser.JSONReader;
 import util.DistanceHelper;
+import util.DoubleHelper;
 
 
 public class Otp {
-	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\walkingDistancesSmall1";
+	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\CompleteOutputTC";
 	private static final String distMatrixFileName = outputFileBaseName + "_DistMatrix.csv";
 	private static final String timeMatrixFileName = outputFileBaseName + "_TimeMatrix.csv";
 	
@@ -148,7 +149,7 @@ public class Otp {
 			bufferedWriter.newLine();
 			for(int i=0; i<numLandmarks; i++){
 				for(int j=0; j<numLandmarks; j++){
-					bufferedWriter.append("" + matrix[i][j]);
+					bufferedWriter.append("" + DoubleHelper.roundToNPlaces(matrix[i][j], 5));
 					if(j<(numLandmarks-1)) bufferedWriter.append(",");
 				}
 				bufferedWriter.newLine();

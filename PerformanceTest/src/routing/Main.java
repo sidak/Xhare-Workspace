@@ -16,7 +16,7 @@ public class Main {
 	
 	private static double[] lats;
 	private static double[] lngs;
-	private static String inputFileName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\InputFiles\\gridCentersSmall.txt";
+	private static String inputFileName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\InputFiles\\CompleteInput.txt";
 	private static int numLandmarks = 0;
 	private static final int NUM_THREADS = 4;
 		
