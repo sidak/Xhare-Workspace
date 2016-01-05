@@ -107,7 +107,7 @@ public class API {
 	
 	public static void book(int id, Query query){
 		QuerySchedulerForTaxi queryScheduler = new QuerySchedulerForTaxi(query, taxis.get(id));
-		List<Integer> insertionPoints = queryScheduler.scheduleQuery();
+		List<Integer> insertionPoints = queryScheduler.getQueryInsertionPositions();
 		Schedule newSchedule = queryScheduler.getBestSchedule();
 		taxis.get(id).setSchedule(newSchedule);
 		

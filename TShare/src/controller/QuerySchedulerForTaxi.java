@@ -228,6 +228,10 @@ public class QuerySchedulerForTaxi {
 		return true;
 	}
 	
+	public List<Integer> getQueryInsertionPositions() {
+		return queryInsertionPositions;
+	}
+
 	private boolean isValidNewPoint(long arrivalTime, long lateBound) {
 		long slackTime = lateBound - arrivalTime;
 		if(slackTime<0) return false;
