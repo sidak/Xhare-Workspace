@@ -20,7 +20,7 @@ import util.DoubleHelper;
 
 
 public class Otp {
-	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\CompleteOutputTC";
+	private static final String outputFileBaseName = "C:\\Users\\50003152\\workspace\\PerformanceTest\\OutputFiles\\SmallInputTC";
 	private static final String distMatrixFileName = outputFileBaseName + "_DistMatrix.csv";
 	private static final String timeMatrixFileName = outputFileBaseName + "_TimeMatrix.csv";
 	
@@ -249,8 +249,8 @@ public class Otp {
 	private void doConditionalRouting(int idx_i, int idx_j, double srcLat, double srcLng, double destLat, double destLng, 
 			BufferedWriter bufferedWriter) {
 		try{
-			double geoDist = DistanceHelper.distBetween(srcLat, srcLng, destLat, destLng);
-			long geoTimeInMillis = (long) ((geoDist*3600)/speedLimitInKmHr); 
+			double geoDistInKm = DistanceHelper.distBetween(srcLat, srcLng, destLat, destLng);
+			long geoTimeInMillis = (long) ((geoDistInKm*3600000)/speedLimitInKmHr); 
 			
 			if(geoTimeInMillis < timeBoundInMillis){
 			//if(DoubleHelper.lessThan(geoDist, geoDistBoundInKm)){
